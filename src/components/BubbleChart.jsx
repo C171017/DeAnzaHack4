@@ -19,6 +19,11 @@ const BubbleChart = ({ data }) => {
         // Clear previous renders
         svg.selectAll('*').remove();
 
+        // Magnet variables
+        let isAttracting = false;
+        let cursorX = width / 2;
+        let cursorY = height / 2;
+
         // Create simulation
         const simulation = d3.forceSimulation(data)
             .force('charge', d3.forceManyBody().strength(5))
@@ -86,9 +91,76 @@ const BubbleChart = ({ data }) => {
             d.fy = null;
         }
 
+        // Magnet Interaction Handlers
+        const handleStart = (x, y) => {
+            isAttracting = true;
+            cursorX = x;
+            cursorY = y;
+
+            // Add attraction forces
+            simulation.force('x', d3.forceX(cursorX).strength(0.2));
+            simulation.force('y', d3.forceY(cursorY).strength(0.2));
+            simulation.force('center', null); // Disable center force to allow free movement to magnet
+            simulation.alphaTarget(0.3).restart();
+        };
+
+        const handleMove = (x, y) => {
+            if (isAttracting) {
+                cursorX = x;
+                cursorY = y;
+                simulation.force('x', d3.forceX(cursorX).strength(0.2));
+                simulation.force('y', d3.forceY(cursorY).strength(0.2));
+                simulation.alphaTarget(0.3).restart();
+            }
+        };
+
+        const handleEnd = () => {
+            isAttracting = false;
+            // Remove attraction forces
+            simulation.force('x', null);
+            simulation.force('y', null);
+            // Restore center force
+            simulation.force('center', d3.forceCenter(width / 2, height / 2));
+            simulation.alphaTarget(0);
+        };
+
+        // Event Listeners
+        const svgNode = svg.node();
+
+        const onMouseDown = (e) => handleStart(e.clientX, e.clientY);
+        const onMouseMove = (e) => handleMove(e.clientX, e.clientY);
+        const onMouseUp = () => handleEnd();
+
+        const onTouchStart = (e) => {
+            e.preventDefault(); // Prevent scrolling
+            const touch = e.touches[0];
+            handleStart(touch.clientX, touch.clientY);
+        };
+        const onTouchMove = (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            handleMove(touch.clientX, touch.clientY);
+        };
+        const onTouchEnd = () => handleEnd();
+
+        // Attach listeners to window for global release, but start on SVG
+        svgNode.addEventListener('mousedown', onMouseDown);
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+
+        svgNode.addEventListener('touchstart', onTouchStart, { passive: false });
+        window.addEventListener('touchmove', onTouchMove, { passive: false });
+        window.addEventListener('touchend', onTouchEnd);
+
         // Cleanup
         return () => {
             simulation.stop();
+            svgNode.removeEventListener('mousedown', onMouseDown);
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+            svgNode.removeEventListener('touchstart', onTouchStart);
+            window.removeEventListener('touchmove', onTouchMove);
+            window.removeEventListener('touchend', onTouchEnd);
         };
     }, [data]);
 

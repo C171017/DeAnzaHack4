@@ -24,6 +24,12 @@ A web application that visualizes music taste as interactive, magnetic bubbles. 
   - `BubbleChart.jsx`: Encapsulated D3 logic into a reusable React component.
   - `App.jsx`: Manages application state and generates mock data for testing.
 - **Mock Data Pipeline**: Implemented a generator for random tracks, genres, and popularity metrics to test the visualization before API integration.
+- **Data Recording**: Added `src/data/albums.json` to store album information, allowing the app to function without Spotify authentication for demonstration purposes.
+
+### 🧲 Magnet Feature
+- **Interactive Attraction**: Users can click and hold (or touch and hold) anywhere on the screen to activate a "magnet".
+- **Physics**: When active, all album bubbles are attracted to the cursor/finger position, overriding their natural center gravity.
+- **Release**: Releasing the click/touch restores the natural physics simulation.
 
 ## 🛠️ Setup & Installation
 

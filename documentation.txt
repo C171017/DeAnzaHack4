@@ -1,0 +1,42 @@
+# Hacksify Project Documentation
+
+## Overview
+Hacksify is a web application that visualizes music taste as interactive, magnetic bubbles. It uses D3.js for physics simulations and React for the UI.
+
+## Recent Changes
+
+### 1. Data Recording & Mock Data
+- **File**: `src/data/albums.json`
+- **Purpose**: To allow the application to function without requiring every user to log in with Spotify, we have recorded a set of mock album data.
+- **Structure**: The JSON file contains an array of album objects, each with:
+  - `id`: Unique identifier
+  - `name`: Album name
+  - `artists`: Array of artist objects
+  - `images`: Array of album art images
+  - `release_date`: Release date string
+  - `total_tracks`: Number of tracks
+  - `external_urls`: Links to Spotify
+
+- **Integration**: `App.jsx` has been modified to load this data by default if the user is not authenticated. This ensures a seamless "demo mode" experience.
+
+### 2. Magnet Feature
+- **File**: `src/components/BubbleChart.jsx`
+- **Description**: A new interactive feature that allows users to control the bubbles with their mouse or finger.
+- **Interaction**:
+  - **Desktop**: Click and hold the left mouse button.
+  - **Mobile**: Touch and hold the screen.
+- **Physics Implementation**:
+  - When the magnet is active (`mousedown`/`touchstart`), the default "center" force of the D3 simulation is disabled.
+  - A new `forceX` and `forceY` is applied, pulling all nodes towards the current cursor/touch coordinates.
+  - The `alphaTarget` is increased to `0.3` to keep the simulation active and responsive during the drag.
+  - Upon release (`mouseup`/`touchend`), the attraction forces are removed, and the default center force is re-enabled, allowing bubbles to settle back to the center.
+
+## Technical Details
+- **D3 Force Simulation**: The core of the visualization. It uses `forceManyBody` for repulsion (preventing overlap) and `forceCenter` for keeping bubbles on screen. The magnet feature dynamically modifies these forces.
+- **React Integration**: The D3 simulation is wrapped in a `useEffect` hook to integrate with React's lifecycle. Event listeners for the magnet feature are attached to the `window` and `svg` elements to ensure global capture of mouse movements.
+
+## How to Run
+1. `npm install`
+2. `npm run dev`
+3. Open the local server URL (usually http://localhost:5173)
+4. The app will load with demo data. Click and hold to test the magnet!
