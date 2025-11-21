@@ -4,8 +4,6 @@ import { getAuthorizationUrl, getStoredAccessToken, clearTokens } from './utils/
 import { getUserProfile, getSavedAlbums } from './utils/spotifyApi';
 import './App.css';
 
-import albumsData from './data/albums.json';
-
 function App() {
   const [data, setData] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -19,28 +17,8 @@ function App() {
     const token = getStoredAccessToken();
     if (token) {
       checkAuthAndLoadAlbums(token);
-    } else {
-      // Load mock data if not authenticated
-      loadMockAlbums();
     }
   }, []);
-
-  const loadMockAlbums = () => {
-    console.log('Loading mock albums...');
-    const transformedData = albumsData.map((album, index) => ({
-      id: album.id,
-      name: album.name,
-      radius: Math.random() * 30 + 20,
-      group: album.artists[0]?.name || 'Unknown Artist',
-      img: album.images[0]?.url,
-      album: album,
-      artist: album.artists[0]?.name,
-      releaseDate: album.release_date,
-      totalTracks: album.total_tracks
-    }));
-    setData(transformedData);
-    setAlbums(albumsData);
-  };
 
   const checkAuthAndLoadAlbums = async (token) => {
     try {
@@ -48,15 +26,14 @@ function App() {
       const userProfile = await getUserProfile(token);
       setUser(userProfile);
       setIsAuthenticated(true);
-
+      
       // Fetch saved albums
       await loadSavedAlbums(token);
     } catch (error) {
       console.error('Auth check failed:', error);
       clearTokens();
       setIsAuthenticated(false);
-      // Fallback to mock data on error
-      loadMockAlbums();
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -66,24 +43,25 @@ function App() {
     try {
       setLoading(true);
       setData([]); // Clear existing data before loading new albums
-      const DISPLAY_LIMIT = 50;
+      const DISPLAY_LIMIT = 10;
       let allAlbums = [];
       let displayedCount = 0;
       let offset = 0;
       const limit = 50;
       let hasMore = true;
-
+      let isFirstBatch = true;
+      
       console.log('=== Loading User\'s Saved Albums ===');
 
       while (hasMore) {
         const response = await getSavedAlbums(token, limit, offset);
         const newAlbums = response.items;
         allAlbums = allAlbums.concat(newAlbums);
-
-        // Display only the first 50 albums incrementally
+        
+        // Display only the first 10 albums incrementally
         if (displayedCount < DISPLAY_LIMIT) {
           const albumsToDisplay = newAlbums.slice(0, DISPLAY_LIMIT - displayedCount);
-
+          
           // Transform albums for bubble chart
           const transformedBatch = albumsToDisplay.map((item, index) => {
             const album = item.album;
@@ -99,29 +77,35 @@ function App() {
               totalTracks: album.total_tracks
             };
           });
-
+          
           // Incrementally add to display
           setData(prevData => [...prevData, ...transformedBatch]);
           displayedCount += albumsToDisplay.length;
-
+          
+          // Hide loading screen after first batch so chart appears immediately
+          if (isFirstBatch) {
+            setLoading(false);
+            isFirstBatch = false;
+          }
+          
           console.log(`Loaded and displayed ${displayedCount} albums...`);
         }
-
+        
         hasMore = response.next !== null;
         offset += limit;
-
+        
         // Safety limit to prevent infinite loops
         if (offset > 1000) {
           console.warn('Reached safety limit of 1000 albums');
           break;
         }
       }
-
+      
       setAlbums(allAlbums);
       console.log(`Total albums loaded: ${allAlbums.length}`);
       console.log(`Displaying: ${Math.min(displayedCount, DISPLAY_LIMIT)} albums`);
-
-      // Output first 50 albums to console
+      
+      // Output first 10 albums to console
       allAlbums.slice(0, DISPLAY_LIMIT).forEach((item, index) => {
         const album = item.album;
         console.log(`${index + 1}. ${album.name} by ${album.artists.map(a => a.name).join(', ')}`);
@@ -171,7 +155,7 @@ function App() {
           {isAuthenticated && user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span style={{ color: 'white' }}>{user.display_name || user.id}</span>
-              <button
+              <button 
                 onClick={handleLogout}
                 style={{
                   padding: '6px 12px',
@@ -187,7 +171,7 @@ function App() {
               </button>
             </div>
           ) : (
-            <button
+            <button 
               onClick={handleLogin}
               style={{
                 padding: '8px 16px',
@@ -206,10 +190,10 @@ function App() {
       </header>
       <main className="visualizer-container">
         {loading ? (
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
             height: '100%',
             color: 'white',
             flexDirection: 'column',
@@ -219,10 +203,10 @@ function App() {
             {isAuthenticated && <div style={{ color: '#888', fontSize: '14px' }}>Fetching your saved albums...</div>}
           </div>
         ) : error ? (
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
             height: '100%',
             color: '#ff5500',
             flexDirection: 'column',
@@ -230,7 +214,7 @@ function App() {
           }}>
             <div>❌ {error}</div>
             {!isAuthenticated && (
-              <button
+              <button 
                 onClick={handleLogin}
                 style={{
                   padding: '10px 20px',
@@ -246,40 +230,46 @@ function App() {
               </button>
             )}
           </div>
-        ) : data.length === 0 && !loading ? (
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
+        ) : !isAuthenticated ? (
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            height: '100%',
+            flexDirection: 'column',
+            gap: '20px',
+            color: 'white'
+          }}>
+            <h2>Welcome to Hacksify</h2>
+            <p style={{ color: '#888' }}>Visualize your music taste with interactive bubbles</p>
+            <button 
+              onClick={handleLogin}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#1db954',
+                color: 'white',
+                border: 'none',
+                borderRadius: '25px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                fontSize: '16px'
+              }}
+            >
+              Continue with Spotify
+            </button>
+          </div>
+        ) : albums.length === 0 ? (
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
             height: '100%',
             color: 'white',
             flexDirection: 'column',
             gap: '20px'
           }}>
-            {!isAuthenticated ? (
-              <>
-                <h2>Welcome to Hacksify</h2>
-                <p style={{ color: '#888' }}>Visualize your music taste with interactive bubbles</p>
-                <button
-                  onClick={handleLogin}
-                  style={{
-                    padding: '12px 24px',
-                    backgroundColor: '#1db954',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '25px',
-                    cursor: 'pointer',
-                    fontWeight: 'bold',
-                    fontSize: '16px'
-                  }}
-                >
-                  Login with Spotify to see YOUR music
-                </button>
-                <p style={{ color: '#666', fontSize: '12px', marginTop: '10px' }}>Showing demo data below</p>
-              </>
-            ) : (
-              <div>No saved albums found</div>
-            )}
+            <div>No saved albums found</div>
+            <div style={{ color: '#888', fontSize: '14px' }}>Save some albums on Spotify to see them here!</div>
           </div>
         ) : (
           <>
@@ -299,7 +289,7 @@ function App() {
                 📊 Albums Displayed: {data.length} / {albums.length}
               </div>
               <div style={{ fontSize: '12px', color: '#888' }}>
-                {data.length < albums.length ? 'Showing first 50 albums' : 'Showing all albums'}
+                {data.length < albums.length ? 'Showing first 10 albums' : 'Showing all albums'}
               </div>
             </div>
           </>
