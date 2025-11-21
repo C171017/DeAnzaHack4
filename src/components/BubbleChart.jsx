@@ -13,7 +13,8 @@ const BubbleChart = ({ data }) => {
         const svg = d3.select(svgRef.current)
             .attr('width', width)
             .attr('height', height)
-            .style('background-color', '#121212');
+            .style('background-color', '#121212')
+            .style('overflow', 'visible');
 
         // Clear previous renders
         svg.selectAll('*').remove();
