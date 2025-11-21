@@ -57,20 +57,12 @@ const BubbleChart = ({ data }) => {
         nodes.append('circle')
             .attr('r', d => d.radius)
             .attr('fill', (d, i) => d.img ? `url(#image-${i})` : '#333')
-            .attr('stroke', '#ff5500')
-            .attr('stroke-width', 2);
+            .attr('fill-opacity', 0.85) // Slight transparency for glass effect
+            .attr('stroke', 'rgba(255, 255, 255, 0.2)') // Subtle white border
+            .attr('stroke-width', 1)
+            .style('filter', 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))'); // Soft shadow for depth
 
-        // Add genre labels
-        nodes.append('text')
-            .text(d => d.group)
-            .attr('text-anchor', 'middle')
-            .attr('dy', '.3em')
-            .style('fill', 'white')
-            .style('font-family', 'var(--font-family)')
-            .style('font-size', d => Math.min(d.radius / 2, 12) + 'px') // Scale font size with bubble
-            .style('font-weight', 'bold')
-            .style('text-shadow', '1px 1px 2px black') // Shadow for readability
-            .style('pointer-events', 'none'); // Let clicks pass through to the circle
+
 
         // Simulation tick
         simulation.on('tick', () => {
