@@ -3,7 +3,7 @@ import './App.css'
 function App() {
   return (
     <div className="App">
-      <h1>hackthon 4</h1>
+      <h1>Hacksify</h1>
     </div>
   )
 }
