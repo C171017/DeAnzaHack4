@@ -39,6 +39,25 @@ function App() {
     }
   };
 
+  // Random selection algorithm using Fisher-Yates shuffle
+  const getRandomAlbums = (albums, count) => {
+    if (albums.length <= count) {
+      return albums;
+    }
+    
+    // Create a copy of the array to avoid mutating the original
+    const shuffled = [...albums];
+    
+    // Fisher-Yates shuffle algorithm
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    
+    // Return the first 'count' albums from the shuffled array
+    return shuffled.slice(0, count);
+  };
+
   const loadSavedAlbums = async (token) => {
     try {
       setLoading(true);
@@ -48,7 +67,14 @@ function App() {
       // Output albums to console
       console.log('=== User\'s Saved Albums ===');
       console.log(`Total albums: ${savedAlbums.length}`);
-      savedAlbums.forEach((item, index) => {
+      
+      // Randomly select 50 albums for display
+      const DISPLAY_COUNT = 50;
+      const selectedAlbums = getRandomAlbums(savedAlbums, DISPLAY_COUNT);
+      
+      console.log(`Displaying ${selectedAlbums.length} randomly selected albums out of ${savedAlbums.length} total albums`);
+      
+      selectedAlbums.forEach((item, index) => {
         const album = item.album;
         console.log(`${index + 1}. ${album.name} by ${album.artists.map(a => a.name).join(', ')}`);
         console.log(`   - Release Date: ${album.release_date}`);
@@ -58,8 +84,8 @@ function App() {
         console.log('---');
       });
       
-      // Transform albums for bubble chart
-      const transformedData = savedAlbums.map((item, index) => {
+      // Transform selected albums for bubble chart
+      const transformedData = selectedAlbums.map((item, index) => {
         const album = item.album;
         return {
           id: album.id,
@@ -246,10 +272,10 @@ function App() {
               maxWidth: '300px'
             }}>
               <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>
-                📊 Albums Loaded: {albums.length}
+                📊 Albums Displayed: {data.length} / {albums.length}
               </div>
               <div style={{ fontSize: '12px', color: '#888' }}>
-                Check console for full album details
+                Showing 50 randomly selected albums
               </div>
             </div>
           </>
