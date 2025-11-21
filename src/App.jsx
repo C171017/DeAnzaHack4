@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import BubbleChart from './components/BubbleChart';
 import { getAuthorizationUrl, getStoredAccessToken, clearTokens } from './utils/spotifyAuth';
-import { getUserProfile, getAllSavedAlbums } from './utils/spotifyApi';
+import { getUserProfile, getSavedAlbums } from './utils/spotifyApi';
 import './App.css';
 
 function App() {
@@ -39,42 +39,67 @@ function App() {
     }
   };
 
-  // Random selection algorithm using Fisher-Yates shuffle
-  const getRandomAlbums = (albums, count) => {
-    if (albums.length <= count) {
-      return albums;
-    }
-    
-    // Create a copy of the array to avoid mutating the original
-    const shuffled = [...albums];
-    
-    // Fisher-Yates shuffle algorithm
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    
-    // Return the first 'count' albums from the shuffled array
-    return shuffled.slice(0, count);
-  };
-
   const loadSavedAlbums = async (token) => {
     try {
       setLoading(true);
-      const savedAlbums = await getAllSavedAlbums(token);
-      setAlbums(savedAlbums);
+      setData([]); // Clear existing data before loading new albums
+      const DISPLAY_LIMIT = 50;
+      let allAlbums = [];
+      let displayedCount = 0;
+      let offset = 0;
+      const limit = 50;
+      let hasMore = true;
       
-      // Output albums to console
-      console.log('=== User\'s Saved Albums ===');
-      console.log(`Total albums: ${savedAlbums.length}`);
+      console.log('=== Loading User\'s Saved Albums ===');
+
+      while (hasMore) {
+        const response = await getSavedAlbums(token, limit, offset);
+        const newAlbums = response.items;
+        allAlbums = allAlbums.concat(newAlbums);
+        
+        // Display only the first 50 albums incrementally
+        if (displayedCount < DISPLAY_LIMIT) {
+          const albumsToDisplay = newAlbums.slice(0, DISPLAY_LIMIT - displayedCount);
+          
+          // Transform albums for bubble chart
+          const transformedBatch = albumsToDisplay.map((item, index) => {
+            const album = item.album;
+            return {
+              id: album.id,
+              name: album.name,
+              radius: Math.random() * 30 + 20,
+              group: album.artists[0]?.name || 'Unknown Artist',
+              img: album.images[0]?.url || `https://picsum.photos/seed/${displayedCount + index}/200`,
+              album: album,
+              artist: album.artists[0]?.name,
+              releaseDate: album.release_date,
+              totalTracks: album.total_tracks
+            };
+          });
+          
+          // Incrementally add to display
+          setData(prevData => [...prevData, ...transformedBatch]);
+          displayedCount += albumsToDisplay.length;
+          
+          console.log(`Loaded and displayed ${displayedCount} albums...`);
+        }
+        
+        hasMore = response.next !== null;
+        offset += limit;
+        
+        // Safety limit to prevent infinite loops
+        if (offset > 1000) {
+          console.warn('Reached safety limit of 1000 albums');
+          break;
+        }
+      }
       
-      // Randomly select 50 albums for display
-      const DISPLAY_COUNT = 50;
-      const selectedAlbums = getRandomAlbums(savedAlbums, DISPLAY_COUNT);
+      setAlbums(allAlbums);
+      console.log(`Total albums loaded: ${allAlbums.length}`);
+      console.log(`Displaying: ${Math.min(displayedCount, DISPLAY_LIMIT)} albums`);
       
-      console.log(`Displaying ${selectedAlbums.length} randomly selected albums out of ${savedAlbums.length} total albums`);
-      
-      selectedAlbums.forEach((item, index) => {
+      // Output first 50 albums to console
+      allAlbums.slice(0, DISPLAY_LIMIT).forEach((item, index) => {
         const album = item.album;
         console.log(`${index + 1}. ${album.name} by ${album.artists.map(a => a.name).join(', ')}`);
         console.log(`   - Release Date: ${album.release_date}`);
@@ -83,24 +108,6 @@ function App() {
         console.log(`   - Spotify URL: ${album.external_urls.spotify}`);
         console.log('---');
       });
-      
-      // Transform selected albums for bubble chart
-      const transformedData = selectedAlbums.map((item, index) => {
-        const album = item.album;
-        return {
-          id: album.id,
-          name: album.name,
-          radius: Math.random() * 30 + 20,
-          group: album.artists[0]?.name || 'Unknown Artist',
-          img: album.images[0]?.url || `https://picsum.photos/seed/${index}/200`,
-          album: album,
-          artist: album.artists[0]?.name,
-          releaseDate: album.release_date,
-          totalTracks: album.total_tracks
-        };
-      });
-      
-      setData(transformedData);
     } catch (error) {
       console.error('Failed to load albums:', error);
       setError(`Failed to load albums: ${error.message}`);
@@ -275,7 +282,7 @@ function App() {
                 📊 Albums Displayed: {data.length} / {albums.length}
               </div>
               <div style={{ fontSize: '12px', color: '#888' }}>
-                Showing 50 randomly selected albums
+                {data.length < albums.length ? 'Showing first 50 albums' : 'Showing all albums'}
               </div>
             </div>
           </>
