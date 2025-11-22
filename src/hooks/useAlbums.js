@@ -61,18 +61,66 @@ const transformInitialAlbums = () => {
 export const useAlbums = () => {
   const [data, setData] = useState([]);
   const [albums, setAlbums] = useState([]);
+  const [libraryAlbums, setLibraryAlbums] = useState([]);
+  const [canvasAlbums, setCanvasAlbums] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const loadInitialAlbums = () => {
     const initialData = transformInitialAlbums();
     setData(initialData);
+    setLibraryAlbums([]);
+    setCanvasAlbums([]);
+  };
+
+  // Move album from library to canvas
+  const moveAlbumToCanvas = (album) => {
+    // Remove from library
+    setLibraryAlbums(prev => prev.filter(a => a.id !== album.id));
+    
+    setCanvasAlbums(prev => {
+      // Check if album already exists on canvas
+      const existingIndex = prev.findIndex(a => a.id === album.id);
+      if (existingIndex >= 0) {
+        // Update existing album (e.g., position update on drop)
+        const updated = [...prev];
+        updated[existingIndex] = {
+          ...updated[existingIndex],
+          ...album,
+          // Preserve position if album already has one and new one is not explicitly set
+          x: album.x !== undefined ? album.x : updated[existingIndex].x,
+          y: album.y !== undefined ? album.y : updated[existingIndex].y
+        };
+        return updated;
+      }
+      // Initialize position if not set
+      const albumWithPosition = {
+        ...album,
+        x: album.x !== undefined ? album.x : Math.random() * (1920 - album.radius * 2) + album.radius,
+        y: album.y !== undefined ? album.y : Math.random() * (1920 - album.radius * 2) + album.radius
+      };
+      return [...prev, albumWithPosition];
+    });
+  };
+
+  // Move album from canvas to library
+  const moveAlbumToLibrary = (album) => {
+    setCanvasAlbums(prev => prev.filter(a => a.id !== album.id));
+    setLibraryAlbums(prev => {
+      // Check if album already exists in library
+      if (prev.find(a => a.id === album.id)) {
+        return prev;
+      }
+      return [...prev, album];
+    });
   };
 
   const loadSavedAlbums = async (token) => {
     try {
       setLoading(true);
       setData([]); // Clear existing data before loading new albums
+      setLibraryAlbums([]); // Clear library albums
+      setCanvasAlbums([]); // Clear canvas albums
       const DISPLAY_LIMIT = 50;
       let allAlbums = [];
       let displayedCount = 0;
@@ -108,7 +156,8 @@ export const useAlbums = () => {
             };
           });
           
-          // Incrementally add to display
+          // Incrementally add to library (not canvas)
+          setLibraryAlbums(prev => [...prev, ...transformedBatch]);
           setData(prevData => [...prevData, ...transformedBatch]);
           displayedCount += albumsToDisplay.length;
           
@@ -150,10 +199,14 @@ export const useAlbums = () => {
   return {
     data,
     albums,
+    libraryAlbums,
+    canvasAlbums,
     loading,
     error,
     loadInitialAlbums,
     loadSavedAlbums,
+    moveAlbumToCanvas,
+    moveAlbumToLibrary,
     setError
   };
 };

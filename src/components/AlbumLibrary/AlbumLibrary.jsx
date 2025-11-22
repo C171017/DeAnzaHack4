@@ -5,6 +5,7 @@ const AlbumLibrary = ({ albums = [], loading = false, onAlbumDragStart, onAlbumD
   const handleDragStart = (e, album) => {
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('application/json', JSON.stringify(album));
+    // Mark album as being dragged (visual feedback only)
     if (onAlbumDragStart) {
       onAlbumDragStart(album);
     }
@@ -19,7 +20,8 @@ const AlbumLibrary = ({ albums = [], loading = false, onAlbumDragStart, onAlbumD
     e.preventDefault();
     try {
       const albumData = JSON.parse(e.dataTransfer.getData('application/json'));
-      if (onAlbumDrop) {
+      // Add album back to library (removed from canvas)
+      if (onAlbumDrop && albumData) {
         onAlbumDrop(albumData);
       }
     } catch (error) {

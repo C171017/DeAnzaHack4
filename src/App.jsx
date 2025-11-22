@@ -13,7 +13,19 @@ import './App.css';
 
 function App() {
   const { isAuthenticated, user, loading: authLoading, error: authError, checkAuth, logout } = useSpotifyAuth();
-  const { data, albums, loading: albumsLoading, error: albumsError, loadInitialAlbums, loadSavedAlbums, setError } = useAlbums();
+  const { 
+    data, 
+    albums, 
+    libraryAlbums, 
+    canvasAlbums, 
+    loading: albumsLoading, 
+    error: albumsError, 
+    loadInitialAlbums, 
+    loadSavedAlbums, 
+    moveAlbumToCanvas,
+    moveAlbumToLibrary,
+    setError 
+  } = useAlbums();
 
   // Load initial album images on mount
   useEffect(() => {
@@ -98,14 +110,22 @@ function App() {
               onRetry={handleLogin}
             />
           ) : (
-            <EmptyCanvas />
+            <EmptyCanvas 
+              albums={canvasAlbums}
+              onAlbumDrop={moveAlbumToCanvas}
+              onAlbumDragStart={(album) => {
+                // Album is being dragged from canvas, will be handled on drop
+              }}
+            />
           )
         )}
       </main>
       {isAuthenticated && (
         <AlbumLibrary 
-          albums={data} 
+          albums={libraryAlbums} 
           loading={albumsLoading}
+          onAlbumDragStart={moveAlbumToCanvas}
+          onAlbumDrop={moveAlbumToLibrary}
         />
       )}
     </div>
