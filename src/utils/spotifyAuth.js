@@ -9,10 +9,11 @@ const getRedirectUri = () => {
     return 'https://music.c171017.com/callback';
   }
   
-  // For local development - use localhost (you'll need to add this to Spotify dashboard)
+  // For local development - use the actual hostname (must match Spotify dashboard exactly)
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     const port = window.location.port || '8080';
-    return `http://localhost:${port}/callback`;
+    // Use the actual hostname to match what's registered in Spotify dashboard
+    return `http://${hostname}:${port}/callback`;
   }
   
   // Fallback to current origin
