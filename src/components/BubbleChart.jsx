@@ -246,7 +246,7 @@ const BubbleChart = ({ data }) => {
         // Use multiply blend mode so overlapping colors mix naturally like paint
         genreNodes.append('circle')
             .attr('class', 'genre-circle')
-            .attr('r', d => d.circleRadius * 1.8) // Visual circle size (large, for color blending)
+            .attr('r', d => d.circleRadius * 3.5) // Visual circle size (large, for color blending)
             .attr('cx', 0)
             .attr('cy', 0)
             .attr('fill', d => d.gradientId ? `url(#${d.gradientId})` : '#CCCCCC') // Use gradient or default gray
