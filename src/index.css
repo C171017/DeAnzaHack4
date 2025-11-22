@@ -1,8 +1,8 @@
 :root {
-  --bg-color: #121212;
+  --bg-color: #ffffff;
   --bg-secondary: #212121;
-  --text-primary: #ffffff;
-  --text-secondary: #b3b3b3;
+  --text-primary: #000000;
+  --text-secondary: #666666;
   --accent-color: #a600ff;
   /* SoundCloud Orange */
   --font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;

@@ -141,15 +141,10 @@ function App() {
     <div className="App">
       <header className="app-header">
         <div className="logo">Hacksify</div>
-        <nav>
-          <button className="nav-btn active">Home</button>
-          <button className="nav-btn">Stream</button>
-          <button className="nav-btn">Library</button>
-        </nav>
         <div className="user-profile">
           {isAuthenticated && user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ color: 'white' }}>{user.display_name || user.id}</span>
+              <span style={{ color: '#000000' }}>{user.display_name || user.id}</span>
               <button 
                 onClick={handleLogout}
                 style={{
@@ -223,7 +218,7 @@ function App() {
             justifyContent: 'center', 
             alignItems: 'center', 
             height: '100%',
-            color: 'white',
+            color: '#000000',
             flexDirection: 'column',
             gap: '20px'
           }}>
@@ -266,7 +261,7 @@ function App() {
             height: '100%',
             flexDirection: 'column',
             gap: '20px',
-            color: 'white'
+            color: '#000000'
           }}>
             <h2>Welcome to Hacksify</h2>
             <p style={{ color: '#888' }}>Visualize your music taste with interactive bubbles</p>
@@ -292,7 +287,7 @@ function App() {
             justifyContent: 'center', 
             alignItems: 'center', 
             height: '100%',
-            color: 'white',
+            color: '#000000',
             flexDirection: 'column',
             gap: '20px'
           }}>
