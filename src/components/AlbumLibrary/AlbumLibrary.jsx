@@ -65,30 +65,43 @@ const AlbumLibrary = ({ albums = [], loading = false, onAlbumDragStart, onAlbumD
             <p>No albums loaded yet</p>
           </div>
         ) : (
-          albums.map((album) => (
-            <div
-              key={album.id}
-              className="album-library-item"
-              draggable="true"
-              onDragStart={(e) => handleDragStart(e, album)}
-            >
-              <div className="album-library-item-image">
-                <img 
-                  src={album.img || 'https://via.placeholder.com/60'} 
-                  alt={album.name}
-                  loading="lazy"
-                />
-              </div>
-              <div className="album-library-item-info">
-                <div className="album-library-item-name" title={album.name}>
-                  {album.name}
+          albums.map((album) => {
+            const handleDoubleClick = () => {
+              // For logged-in albums, use spotifyUrl
+              // For initial albums, check both spotifyUrl and external_urls
+              const url = album.spotifyUrl || (album.external_urls && album.external_urls.spotify);
+              if (url) {
+                window.open(url, '_blank');
+              }
+            };
+
+            return (
+              <div
+                key={album.id}
+                className="album-library-item"
+                draggable="true"
+                onDragStart={(e) => handleDragStart(e, album)}
+                onDoubleClick={handleDoubleClick}
+                style={{ cursor: album.spotifyUrl || (album.external_urls && album.external_urls.spotify) ? 'pointer' : 'default' }}
+              >
+                <div className="album-library-item-image">
+                  <img 
+                    src={album.img || 'https://via.placeholder.com/60'} 
+                    alt={album.name}
+                    loading="lazy"
+                  />
                 </div>
-                <div className="album-library-item-artist" title={album.artist}>
-                  {album.artist || 'Unknown Artist'}
+                <div className="album-library-item-info">
+                  <div className="album-library-item-name" title={album.name}>
+                    {album.name}
+                  </div>
+                  <div className="album-library-item-artist" title={album.artist}>
+                    {album.artist || 'Unknown Artist'}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

@@ -8,6 +8,9 @@ export const createDragHandlers = (simulation, albumCollisionPadding) => {
     if (event.sourceEvent) {
       event.sourceEvent.stopPropagation();
     }
+    // Zero out velocity to prevent momentum from causing jumps
+    d.vx = 0;
+    d.vy = 0;
     d.fx = d.x;
     d.fy = d.y;
     // Boost alpha and set target to keep simulation active during drag
@@ -25,8 +28,19 @@ export const createDragHandlers = (simulation, albumCollisionPadding) => {
     const minY = boundaryRadius;
     const maxY = VIEWBOX_SIZE - boundaryRadius;
     
-    d.fx = Math.max(minX, Math.min(maxX, event.x));
-    d.fy = Math.max(minY, Math.min(maxY, event.y));
+    // Calculate clamped position
+    const clampedX = Math.max(minX, Math.min(maxX, event.x));
+    const clampedY = Math.max(minY, Math.min(maxY, event.y));
+    
+    // Update both fixed position and actual position to prevent teleporting during collisions
+    // Also zero out velocity to prevent momentum from causing jumps
+    d.x = clampedX;
+    d.y = clampedY;
+    d.vx = 0;
+    d.vy = 0;
+    d.fx = clampedX;
+    d.fy = clampedY;
+    
     // Continuously boost alpha during drag to keep simulation responsive
     simulation.alpha(1).alphaTarget(0.3).restart();
   };
