@@ -84,7 +84,7 @@ const BubbleChart = ({ data }) => {
     const genreCollisionRadius = (GENRE_TEXT_FONT_SIZE / 2) + GENRE_COLLISION_PADDING;
     const genreData = createGenreData(GENRES, genreCollisionRadius);
 
-    // Combine genre data and album data for simulation
+    // Combine genre data and album data for simulation (genres first so they render below albums)
     const allData = [...genreData, ...data];
 
     // Initialize random positions
@@ -133,14 +133,14 @@ const BubbleChart = ({ data }) => {
     // Define defs for images and gradients
     const defs = svg.append('defs');
 
-    // Create image patterns for albums
-    createImagePatterns(defs, nodes);
-
-    // Create gradients for genres
+    // Create gradients for genres (needed before rendering)
     const genreNodes = nodes.filter(d => d.isGenre);
     createGenreGradients(defs, genreNodes);
 
-    // Render elements
+    // Create image patterns for albums (needed before rendering)
+    createImagePatterns(defs, nodes);
+
+    // Render elements in order: genre circles first (below), then albums (on top), then genre text (on top)
     renderGenreCircles(genreNodes);
     renderAlbumRectangles(albumNodes);
     renderGenreText(genreNodes);

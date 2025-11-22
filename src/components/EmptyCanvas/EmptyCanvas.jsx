@@ -177,8 +177,8 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
     // Define defs for images and gradients (create once)
     const defs = svg.append('defs');
 
-    // Combine albums and genres for simulation
-    const allData = [...(albums || []), ...(genres || [])];
+    // Combine genres and albums for simulation (genres first so they render below albums)
+    const allData = [...(genres || []), ...(albums || [])];
 
     // Render albums and genres if any
     let simulation = null;
@@ -237,7 +237,23 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
         .style('cursor', 'grab')
         .attr('transform', d => `translate(${d.x},${d.y})`);
 
-      // Add rectangles to album nodes
+      // Merge enter and update
+      const nodesMerged = nodesEnter.merge(nodes);
+
+      // Create gradients for genres (needed before rendering)
+      const genreNodes = nodesMerged.filter(d => d.isGenre);
+      createGenreGradients(defs, genreNodes);
+
+      // Create image patterns for albums (needed before rendering)
+      const albumNodes = nodesMerged.filter(d => !d.isGenre);
+      createImagePatterns(defs, albumNodes);
+
+      // Render genre circles first (so they appear below albums)
+      const genreNodesEnter = nodesEnter.filter(d => d.isGenre);
+      renderGenreCircles(genreNodesEnter);
+      renderGenreText(genreNodesEnter);
+
+      // Add rectangles to album nodes (after genre circles, so albums appear on top)
       nodesEnter.filter(d => !d.isGenre)
         .append('rect')
         .attr('width', d => d.radius * 2)
@@ -250,9 +266,6 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
         .attr('stroke-width', 1)
         .style('filter', 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))');
 
-      // Merge enter and update
-      const nodesMerged = nodesEnter.merge(nodes);
-
       // Update fill for album nodes
       nodesMerged.filter(d => !d.isGenre)
         .select('rect')
@@ -262,19 +275,6 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
           }
           return '#333';
         });
-
-      // Create image patterns for albums
-      const albumNodes = nodesMerged.filter(d => !d.isGenre);
-      createImagePatterns(defs, albumNodes);
-
-      // Create gradients for genres
-      const genreNodes = nodesMerged.filter(d => d.isGenre);
-      createGenreGradients(defs, genreNodes);
-
-      // Render genre circles and text for new nodes only
-      const genreNodesEnter = nodesEnter.filter(d => d.isGenre);
-      renderGenreCircles(genreNodesEnter);
-      renderGenreText(genreNodesEnter);
 
       // Setup drag handlers for all nodes (D3 drag for canvas movement)
       const { dragstarted, dragged, dragended } = createDragHandlers(simulation, ALBUM_COLLISION_PADDING);
