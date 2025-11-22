@@ -179,48 +179,48 @@ function App() {
 
   return (
     <div className="App">
-      <header className="app-header">
-        <div className="user-profile">
-          {isAuthenticated && user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ color: '#000000' }}>{user.display_name || user.id}</span>
-              <button 
-                onClick={handleLogout}
-                style={{
-                  padding: '6px 12px',
-                  backgroundColor: '#ff5500',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '15px',
-                  cursor: 'pointer',
-                  fontSize: '12px'
-                }}
-              >
-                Logout
-              </button>
-            </div>
-          ) : (
+      {/* Fixed Login/Logout Button */}
+      <div className="fixed-login-button">
+        {isAuthenticated && user ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ color: '#000000' }}>{user.display_name || user.id}</span>
             <button 
-              onClick={handleLogin}
+              onClick={handleLogout}
               style={{
-                padding: '8px 16px',
-                backgroundColor: '#1db954',
+                padding: '6px 12px',
+                backgroundColor: '#ff5500',
                 color: 'white',
                 border: 'none',
-                borderRadius: '20px',
+                borderRadius: '15px',
                 cursor: 'pointer',
-                fontWeight: 'bold'
+                fontSize: '12px'
               }}
             >
-              Login with Spotify
+              Logout
             </button>
-          )}
-        </div>
-      </header>
+          </div>
+        ) : (
+          <button 
+            onClick={handleLogin}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#1db954',
+              color: 'white',
+              border: 'none',
+              borderRadius: '20px',
+              cursor: 'pointer',
+              fontWeight: 'bold'
+            }}
+          >
+            Login with Spotify
+          </button>
+        )}
+      </div>
       <main className="visualizer-container">
+        {/* Fixed Arrow Button */}
         <button
           onClick={() => navigate('/blank')}
-          className="arrow-button"
+          className="arrow-button fixed-arrow-button"
           style={{
             position: 'fixed',
             bottom: '30px',
@@ -310,27 +310,7 @@ function App() {
             <div style={{ color: '#888', fontSize: '14px' }}>Save some albums on Spotify to see them here!</div>
           </div>
         ) : (
-          <>
-            <BubbleChart data={data} />
-            <div style={{
-              position: 'absolute',
-              bottom: '20px',
-              left: '20px',
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              padding: '15px',
-              borderRadius: '10px',
-              color: 'white',
-              fontSize: '14px',
-              maxWidth: '300px'
-            }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>
-                📊 Albums Displayed: {data.length} / {albums.length}
-              </div>
-              <div style={{ fontSize: '12px', color: '#888' }}>
-                {data.length < albums.length ? 'Showing first 50 albums' : 'Showing all albums'}
-              </div>
-            </div>
-          </>
+          <BubbleChart data={data} />
         )}
       </main>
     </div>

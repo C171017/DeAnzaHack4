@@ -5,6 +5,13 @@
     flex-direction: column;
 }
 
+.fixed-login-button {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    z-index: 1000;
+}
+
 .app-header {
     display: flex;
     justify-content: space-between;
@@ -59,8 +66,8 @@ nav {
 
 .visualizer-container {
     flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
+    position: relative;
+    overflow: visible;
+    width: 100vw;
+    height: 100vh;
 }

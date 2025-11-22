@@ -7,14 +7,31 @@ const BubbleChart = ({ data }) => {
     useEffect(() => {
         if (!data || data.length === 0) return;
 
-        const width = window.innerWidth;
-        const height = window.innerHeight;
+        // Calculate SVG size: 150% of the largest window dimension
+        const maxWindowDimension = Math.max(window.innerWidth, window.innerHeight);
+        const svgSize = maxWindowDimension * 1.5;
+
+        // ViewBox is a square 1920x1920
+        const viewBoxSize = 1920;
+
+        // Calculate position to center SVG on window
+        const windowCenterX = window.innerWidth / 2;
+        const windowCenterY = window.innerHeight / 2;
+        const svgLeft = windowCenterX - svgSize / 2;
+        const svgTop = windowCenterY - svgSize / 2;
 
         const svg = d3.select(svgRef.current)
-            .attr('width', width)
-            .attr('height', height)
+            .attr('width', svgSize)
+            .attr('height', svgSize)
+            .attr('viewBox', `0 0 ${viewBoxSize} ${viewBoxSize}`)
+            .attr('preserveAspectRatio', 'xMidYMid meet')
             .style('background-color', '#ffffff')
-            .style('overflow', 'hidden');
+            .style('overflow', 'visible')
+            .style('border', '2px solid red') // Debug border
+            .style('position', 'absolute')
+            .style('left', `${svgLeft}px`)
+            .style('top', `${svgTop}px`)
+            .style('display', 'block');
 
         // Clear previous renders
         svg.selectAll('*').remove();
@@ -22,19 +39,19 @@ const BubbleChart = ({ data }) => {
         // Set random initial positions for each node
         data.forEach(d => {
             if (d.x === undefined || d.y === undefined) {
-                // Random position within viewport, accounting for square diagonal
+                // Random position within viewBox (1920x1920 square), accounting for square diagonal
                 // Use diagonal distance to ensure entire square stays within bounds
                 const diagonal = d.radius * Math.sqrt(2);
                 const padding = diagonal;
-                d.x = Math.random() * (width - padding * 2) + padding;
-                d.y = Math.random() * (height - padding * 2) + padding;
+                d.x = Math.random() * (viewBoxSize - padding * 2) + padding;
+                d.y = Math.random() * (viewBoxSize - padding * 2) + padding;
             }
         });
 
         // Create simulation
         const simulation = d3.forceSimulation(data)
             .force('charge', d3.forceManyBody().strength(5))
-            .force('center', d3.forceCenter(width / 2, height / 2))
+            .force('center', d3.forceCenter(viewBoxSize / 2, viewBoxSize / 2))
             .force('collide', d3.forceCollide().radius(d => d.radius * Math.sqrt(2) + 2).strength(0.7));
 
         // Create node groups
@@ -81,13 +98,13 @@ const BubbleChart = ({ data }) => {
 
         // Simulation tick with boundary constraints
         simulation.on('tick', () => {
-            // Enforce boundaries to keep squares within viewport
+            // Enforce boundaries to keep squares within viewBox (1920x1920 square)
             data.forEach(d => {
                 const diagonal = d.radius * Math.sqrt(2);
                 const minX = diagonal;
-                const maxX = width - diagonal;
+                const maxX = viewBoxSize - diagonal;
                 const minY = diagonal;
-                const maxY = height - diagonal;
+                const maxY = viewBoxSize - diagonal;
                 
                 // Constrain x position
                 if (d.x < minX) {
@@ -118,12 +135,12 @@ const BubbleChart = ({ data }) => {
         }
 
         function dragged(event, d) {
-            // Constrain dragging within viewport
+            // Constrain dragging within viewBox (1920x1920 square)
             const diagonal = d.radius * Math.sqrt(2);
             const minX = diagonal;
-            const maxX = width - diagonal;
+            const maxX = viewBoxSize - diagonal;
             const minY = diagonal;
-            const maxY = height - diagonal;
+            const maxY = viewBoxSize - diagonal;
             
             d.fx = Math.max(minX, Math.min(maxX, event.x));
             d.fy = Math.max(minY, Math.min(maxY, event.y));
@@ -135,9 +152,28 @@ const BubbleChart = ({ data }) => {
             d.fy = null;
         }
 
+        // Handle window resize to recalculate SVG size and position
+        const handleResize = () => {
+            const newMaxDimension = Math.max(window.innerWidth, window.innerHeight);
+            const newSvgSize = newMaxDimension * 1.5;
+            const newWindowCenterX = window.innerWidth / 2;
+            const newWindowCenterY = window.innerHeight / 2;
+            const newSvgLeft = newWindowCenterX - newSvgSize / 2;
+            const newSvgTop = newWindowCenterY - newSvgSize / 2;
+            
+            d3.select(svgRef.current)
+                .attr('width', newSvgSize)
+                .attr('height', newSvgSize)
+                .style('left', `${newSvgLeft}px`)
+                .style('top', `${newSvgTop}px`);
+        };
+
+        window.addEventListener('resize', handleResize);
+
         // Cleanup
         return () => {
             simulation.stop();
+            window.removeEventListener('resize', handleResize);
         };
     }, [data]);
 
