@@ -12,6 +12,8 @@ auto size svg?
 a fake 3d vertical time line
 manually edit genre
 add color pattern
+dark mode
+backend automatic sorting 
 
 ### Home Page (Bubble Visualization)
 - **Initial Display**: Shows 11 curated album covers as square bubbles when not authenticated
