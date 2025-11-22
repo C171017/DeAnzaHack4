@@ -13,7 +13,7 @@
             }
         ],
         "release_date": "1973-03-01",
-        "total_tracks": 10,
+        "genre": "Progressive Rock",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/4LH4d3cOWNNsVw41Gqt2kv"
         }
@@ -32,7 +32,7 @@
             }
         ],
         "release_date": "1991-09-24",
-        "total_tracks": 13,
+        "genre": "Grunge",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/2UJcKiJxNryhL0FuR0mhjT"
         }
@@ -51,7 +51,7 @@
             }
         ],
         "release_date": "1969-09-26",
-        "total_tracks": 17,
+        "genre": "Rock",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/0ETFjACtuP2ADo6LFhL6HN"
         }
@@ -70,7 +70,7 @@
             }
         ],
         "release_date": "1971-11-08",
-        "total_tracks": 8,
+        "genre": "Hard Rock",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/44Ig8dzqOkvkGDzaUof9lK"
         }
@@ -89,7 +89,7 @@
             }
         ],
         "release_date": "2010-11-22",
-        "total_tracks": 13,
+        "genre": "Hip Hop",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/20r762YmB5HeofjMCiPMLv"
         }
@@ -108,7 +108,7 @@
             }
         ],
         "release_date": "1979-06-15",
-        "total_tracks": 10,
+        "genre": "Post-Punk",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/0YWz3z8yQ2xrx5vN1b0pNT"
         }
@@ -127,7 +127,7 @@
             }
         ],
         "release_date": "1996-11-04",
-        "total_tracks": 13,
+        "genre": "Electronic",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/77Lae5VorRCNpgZFMW8yRO"
         }
@@ -146,7 +146,7 @@
             }
         ],
         "release_date": "2023-07-28",
-        "total_tracks": 19,
+        "genre": "Hip Hop",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/18NOKLkZETa4sWwLMIm0UZ"
         }
@@ -165,7 +165,7 @@
             }
         ],
         "release_date": "2013-05-17",
-        "total_tracks": 13,
+        "genre": "Electronic",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/4m2880jivSbbyEGAKfITCa"
         }
@@ -184,7 +184,7 @@
             }
         ],
         "release_date": "1979-10-19",
-        "total_tracks": 9,
+        "genre": "Funk",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/3k9lL03kHgk9pRX0qKaEei"
         }
@@ -203,7 +203,7 @@
             }
         ],
         "release_date": "1967-03-12",
-        "total_tracks": 11,
+        "genre": "Art Rock",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/6lBN3Tzt61u8i9A1wgkzKh"
         }
@@ -222,7 +222,7 @@
             }
         ],
         "release_date": "1991-11-04",
-        "total_tracks": 11,
+        "genre": "Shoegaze",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/3GH4IiI6jQAIvnHVdb5FB6"
         }
@@ -241,7 +241,7 @@
             }
         ],
         "release_date": "1975-11-10",
-        "total_tracks": 8,
+        "genre": "Punk Rock",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/5vxNA2I8dcS8bLoIkugLsB"
         }
@@ -260,7 +260,7 @@
             }
         ],
         "release_date": "1979-12-14",
-        "total_tracks": 19,
+        "genre": "Punk Rock",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/6FCzvataOZh68j8OKzOt9a"
         }
@@ -279,7 +279,7 @@
             }
         ],
         "release_date": "1975-08-25",
-        "total_tracks": 8,
+        "genre": "Rock",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/4YhEjYwqJqpb2zqfXFEUlb"
         }
@@ -298,7 +298,7 @@
             }
         ],
         "release_date": "1967-05-26",
-        "total_tracks": 13,
+        "genre": "Rock",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/6QaVfG1pHYl1z15ZxkvVDW"
         }
@@ -317,7 +317,7 @@
             }
         ],
         "release_date": "1973-04-13",
-        "total_tracks": 10,
+        "genre": "Glam Rock",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/3XMzQpPLMkO4WkFh7AydoJ"
         }
@@ -336,7 +336,7 @@
             }
         ],
         "release_date": "1984-09-26",
-        "total_tracks": 9,
+        "genre": "Funk",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/7nXJ5k4XgRj5OLg9m8V3zc"
         }
@@ -355,7 +355,7 @@
             }
         ],
         "release_date": "1992-10-05",
-        "total_tracks": 12,
+        "genre": "Alternative Rock",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/0BiNb8HYR4JvuxUa31Z58Q"
         }
@@ -374,7 +374,7 @@
             }
         ],
         "release_date": "1990-09-24",
-        "total_tracks": 10,
+        "genre": "Thrash Metal",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/5KS3OHMy8AleH0x4UTi6HE"
         }
@@ -393,7 +393,7 @@
             }
         ],
         "release_date": "1993-11-09",
-        "total_tracks": 12,
+        "genre": "Hip Hop",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/4tC4W6A0p1w3d3Xew8A5Sl"
         }
@@ -412,7 +412,7 @@
             }
         ],
         "release_date": "1998-08-25",
-        "total_tracks": 16,
+        "genre": "Hip Hop",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/1BZoqf8Zje5nGdwZhOjAtD"
         }
@@ -431,7 +431,7 @@
             }
         ],
         "release_date": "2016-08-20",
-        "total_tracks": 17,
+        "genre": "R&B",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/3mH6qwIy9crq0I9YQbOuDf"
         }
@@ -450,7 +450,7 @@
             }
         ],
         "release_date": "2019-05-17",
-        "total_tracks": 12,
+        "genre": "Hip Hop",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/5zi7WsKlIiUXv09tbGLKsE"
         }
@@ -469,7 +469,7 @@
             }
         ],
         "release_date": "2005-09-27",
-        "total_tracks": 13,
+        "genre": "Pop Punk",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/2YeOh2Jq6ih3Vqu8lHCz3A"
         }
@@ -488,7 +488,7 @@
             }
         ],
         "release_date": "1970-11-09",
-        "total_tracks": 14,
+        "genre": "Blues Rock",
         "external_urls": {
             "spotify": "https://open.spotify.com/album/5iIWnMgvSM8uEBwXKsPcXM"
         }

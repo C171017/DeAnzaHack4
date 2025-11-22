@@ -69,11 +69,11 @@ const BubbleChart = ({ data }) => {
             }
         });
 
-        // Create simulation
+        // Create simulation with only collision detection
         const simulation = d3.forceSimulation(data)
-            .force('charge', d3.forceManyBody().strength(5))
-            .force('center', d3.forceCenter(viewBoxSize / 2, viewBoxSize / 2))
-            .force('collide', d3.forceCollide().radius(d => d.radius * Math.sqrt(2) + 2).strength(0.7));
+            .force('collide', d3.forceCollide().radius(d => d.radius * Math.sqrt(2) + 2).strength(0.5))
+            .alphaDecay(0.02) // Slower decay for smoother, less bouncy movement
+            .velocityDecay(0.4); // Higher velocity decay to reduce bounciness
 
         // Create node groups inside the container
         const nodes = container.selectAll('.node')
@@ -208,9 +208,11 @@ const BubbleChart = ({ data }) => {
         });
 
         function dragstarted(event, d) {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
+            // Only fix the dragged node's position, let others move freely for real-time collision
             d.fx = d.x;
             d.fy = d.y;
+            // Keep simulation running for real-time collision detection
+            simulation.alphaTarget(0.3).restart();
         }
 
         function dragged(event, d) {
@@ -221,14 +223,19 @@ const BubbleChart = ({ data }) => {
             const minY = diagonal;
             const maxY = viewBoxSize - diagonal;
             
+            // Update dragged node position - other nodes will collide in real-time
             d.fx = Math.max(minX, Math.min(maxX, event.x));
             d.fy = Math.max(minY, Math.min(maxY, event.y));
+            // Keep simulation active for real-time collisions
+            simulation.alphaTarget(0.3).restart();
         }
 
         function dragended(event, d) {
-            if (!event.active) simulation.alphaTarget(0);
+            // Release the dragged node's fixed position
             d.fx = null;
             d.fy = null;
+            // Let simulation settle naturally
+            simulation.alphaTarget(0);
         }
 
         // Calculate panning boundaries relative to viewport
