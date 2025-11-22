@@ -16,6 +16,10 @@
   transition: transform 0.3s ease;
 }
 
+.album-library.collapsed {
+  transform: translateX(100%);
+}
+
 .album-library::before {
   content: '';
   position: absolute;
@@ -42,6 +46,72 @@
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+}
+
+.album-library-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.collapse-button {
+  background: rgba(0, 0, 0, 0.1);
+  border: none;
+  color: rgba(0, 0, 0, 0.7);
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 28px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.collapse-button:hover {
+  background: rgba(0, 0, 0, 0.2);
+  color: rgba(0, 0, 0, 0.9);
+  transform: scale(1.05);
+}
+
+.collapse-button:active {
+  transform: scale(0.95);
+}
+
+.album-library-expand-tab {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%) rotate(-90deg);
+  transform-origin: center;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: none;
+  border-radius: 8px 8px 0 0;
+  padding: 12px 24px;
+  color: rgba(0, 0, 0, 0.8);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.3s ease;
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+}
+
+.album-library-expand-tab:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-50%) rotate(-90deg) translateX(-4px);
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15);
 }
 
 .album-library-header h2 {

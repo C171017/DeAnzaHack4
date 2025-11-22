@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './GenreLibrary.css';
 
 const GenreLibrary = ({ genres = [], onGenreDragStart, onGenreDrop }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   const handleDragStart = (e, genre) => {
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('application/json', JSON.stringify(genre));
@@ -26,15 +28,30 @@ const GenreLibrary = ({ genres = [], onGenreDragStart, onGenreDrop }) => {
     }
   };
 
+  const toggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   return (
-    <div 
-      className="genre-library"
+    <>
+      <div 
+      className={`genre-library ${isCollapsed ? 'collapsed' : ''}`}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
       <div className="genre-library-header">
         <h2>Genres</h2>
-        <span className="genre-count">{genres.length}</span>
+        <div className="genre-library-header-right">
+          <span className="genre-count">{genres.length}</span>
+          <button 
+            className="collapse-button"
+            onClick={toggleCollapse}
+            aria-label={isCollapsed ? 'Expand library' : 'Collapse library'}
+            title={isCollapsed ? 'Expand library' : 'Collapse library'}
+          >
+            {isCollapsed ? '▶' : '◀'}
+          </button>
+        </div>
       </div>
       <div className="genre-library-content">
         {genres.length === 0 ? (
@@ -60,6 +77,17 @@ const GenreLibrary = ({ genres = [], onGenreDragStart, onGenreDrop }) => {
         )}
       </div>
     </div>
+    {isCollapsed && (
+      <button 
+        className="genre-library-expand-tab"
+        onClick={toggleCollapse}
+        aria-label="Expand library"
+        title="Expand library"
+      >
+        Genres
+      </button>
+    )}
+    </>
   );
 };
 

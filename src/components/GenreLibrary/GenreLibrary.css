@@ -1,19 +1,23 @@
 .genre-library {
   position: fixed;
-  right: 320px;
+  left: 0;
   top: 0;
   width: 200px;
   height: 100vh;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-left: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   z-index: 99;
   overflow: hidden;
   transition: transform 0.3s ease;
+}
+
+.genre-library.collapsed {
+  transform: translateX(-100%);
 }
 
 .genre-library::before {
@@ -42,6 +46,72 @@
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+}
+
+.genre-library-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.collapse-button {
+  background: rgba(0, 0, 0, 0.1);
+  border: none;
+  color: rgba(0, 0, 0, 0.7);
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 28px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.collapse-button:hover {
+  background: rgba(0, 0, 0, 0.2);
+  color: rgba(0, 0, 0, 0.9);
+  transform: scale(1.05);
+}
+
+.collapse-button:active {
+  transform: scale(0.95);
+}
+
+.genre-library-expand-tab {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  transform-origin: center;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-left: none;
+  border-radius: 0 0 8px 8px;
+  padding: 12px 24px;
+  color: rgba(0, 0, 0, 0.8);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  z-index: 99;
+  transition: all 0.3s ease;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+}
+
+.genre-library-expand-tab:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-50%) rotate(90deg) translateX(4px);
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
 }
 
 .genre-library-header h2 {
@@ -135,7 +205,7 @@
 .genre-library-item:hover {
   background: rgba(255, 255, 255, 0.25);
   border-color: rgba(255, 255, 255, 0.3);
-  transform: translateX(-4px);
+  transform: translateX(4px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -145,7 +215,7 @@
 
 .genre-library-item:active {
   cursor: grabbing;
-  transform: translateX(-2px) scale(0.98);
+  transform: translateX(2px) scale(0.98);
 }
 
 .genre-library-item-name {
@@ -169,7 +239,6 @@
 
 @media (max-width: 1200px) {
   .genre-library {
-    right: 280px;
     width: 180px;
   }
 }
@@ -177,7 +246,6 @@
 @media (max-width: 768px) {
   .genre-library {
     width: 160px;
-    right: 240px;
   }
 }
 
@@ -187,8 +255,8 @@
     height: 30vh;
     bottom: 0;
     top: auto;
-    right: 0;
-    border-left: none;
+    left: 0;
+    border-right: none;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
   }
 }

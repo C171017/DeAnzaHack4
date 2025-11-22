@@ -13,7 +13,7 @@ import { getAuthorizationUrl, getStoredAccessToken } from './utils/spotifyAuth';
 import './App.css';
 
 function App() {
-  const { isAuthenticated, user, loading: authLoading, error: authError, checkAuth, logout } = useSpotifyAuth();
+  const { isAuthenticated, user, loading: authLoading, error: authError, checkAuth } = useSpotifyAuth();
   const { 
     data, 
     albums, 
@@ -74,43 +74,23 @@ function App() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    loadInitialAlbums();
-  };
-
   const loading = authLoading || albumsLoading;
   const error = authError || albumsError;
 
   return (
     <div className="App">
-      <div className="app-header-top">
-        <div className="header-left">
-          <div className="logo-container">
-            <h1 className="hacksify-logo">Hacksify</h1>
-          </div>
-          {isAuthenticated && (
-            <div className="user-section">
-              <LoginButton
-                isAuthenticated={isAuthenticated}
-                user={user}
-                onLogin={handleLogin}
-                onLogout={handleLogout}
-              />
-            </div>
-          )}
-        </div>
-        {!isAuthenticated && (
-          <div className="fixed-login-button">
+      <div className="logo-container-center">
+        <h1 className="hacksify-logo">Hacksify</h1>
+      </div>
+      {!isAuthenticated && (
+        <div className="fixed-login-button">
             <LoginButton
               isAuthenticated={isAuthenticated}
               user={user}
               onLogin={handleLogin}
-              onLogout={handleLogout}
             />
-          </div>
-        )}
-      </div>
+        </div>
+      )}
       <main className="visualizer-container">
         {!isAuthenticated ? (
           // Before login: show loading state or bubble chart with initial albums

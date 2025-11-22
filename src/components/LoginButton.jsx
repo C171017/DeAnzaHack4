@@ -2,23 +2,9 @@ import React from 'react';
 import spotifyLogo from '../assets/images/Spotify Icon/Spotify_icon.svg.png';
 
 /**
- * Login/Logout button component
+ * Login button component
  */
-const LoginButton = ({ isAuthenticated, user, onLogin, onLogout }) => {
-  if (isAuthenticated && user) {
-    return (
-      <>
-        <span className="username-text">{user.display_name || user.id}</span>
-        <button 
-          onClick={onLogout}
-          className="logout-button"
-        >
-          Logout
-        </button>
-      </>
-    );
-  }
-
+const LoginButton = ({ isAuthenticated, user, onLogin }) => {
   return (
     <button 
       onClick={onLogin}

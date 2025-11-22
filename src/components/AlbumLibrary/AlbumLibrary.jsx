@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './AlbumLibrary.css';
 
 const AlbumLibrary = ({ albums = [], loading = false, onAlbumDragStart, onAlbumDrop }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   const handleDragStart = (e, album) => {
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('application/json', JSON.stringify(album));
@@ -29,17 +31,32 @@ const AlbumLibrary = ({ albums = [], loading = false, onAlbumDragStart, onAlbumD
     }
   };
 
+  const toggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   return (
-    <div 
-      className="album-library"
+    <>
+      <div 
+      className={`album-library ${isCollapsed ? 'collapsed' : ''}`}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
       <div className="album-library-header">
         <h2>Your Albums</h2>
-        <span className="album-count">
-          {loading ? '...' : albums.length}
-        </span>
+        <div className="album-library-header-right">
+          <span className="album-count">
+            {loading ? '...' : albums.length}
+          </span>
+          <button 
+            className="collapse-button"
+            onClick={toggleCollapse}
+            aria-label={isCollapsed ? 'Expand library' : 'Collapse library'}
+            title={isCollapsed ? 'Expand library' : 'Collapse library'}
+          >
+            {isCollapsed ? '◀' : '▶'}
+          </button>
+        </div>
       </div>
       <div className="album-library-content">
         {loading && albums.length === 0 ? (
@@ -78,6 +95,17 @@ const AlbumLibrary = ({ albums = [], loading = false, onAlbumDragStart, onAlbumD
         )}
       </div>
     </div>
+    {isCollapsed && (
+      <button 
+        className="album-library-expand-tab"
+        onClick={toggleCollapse}
+        aria-label="Expand library"
+        title="Expand library"
+      >
+        Albums
+      </button>
+    )}
+    </>
   );
 };
 
