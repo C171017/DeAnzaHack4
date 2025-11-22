@@ -5,6 +5,19 @@ import { getAuthorizationUrl, getStoredAccessToken, clearTokens } from './utils/
 import { getUserProfile, getSavedAlbums } from './utils/spotifyApi';
 import './App.css';
 
+// Import initial album images
+import album1 from './assets/images/initial-screen-albums/album-1.jpg';
+import album2 from './assets/images/initial-screen-albums/album-2.jpg';
+import album3 from './assets/images/initial-screen-albums/album-3.jpg';
+import album4 from './assets/images/initial-screen-albums/album-4.jpg';
+import album5 from './assets/images/initial-screen-albums/album-5.jpg';
+import album6 from './assets/images/initial-screen-albums/album-6.jpg';
+import album7 from './assets/images/initial-screen-albums/album-7.jpg';
+import album8 from './assets/images/initial-screen-albums/album-8.jpg';
+import album9 from './assets/images/initial-screen-albums/album-9.jpg';
+import album10 from './assets/images/initial-screen-albums/album-10.jpg';
+import album11 from './assets/images/initial-screen-albums/album-11.jpg';
+
 function App() {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
@@ -13,6 +26,32 @@ function App() {
   const [albums, setAlbums] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Function to load initial album images
+  const loadInitialAlbums = () => {
+    const initialAlbums = [
+      album1, album2, album3, album4, album5, album6, 
+      album7, album8, album9, album10, album11
+    ];
+
+    const initialData = initialAlbums.map((img, index) => ({
+      id: `initial-${index + 1}`,
+      name: `Album ${index + 1}`,
+      radius: 70,
+      group: 'Initial Albums',
+      img: img,
+      artist: 'Various Artists',
+      releaseDate: null,
+      totalTracks: null
+    }));
+
+    setData(initialData);
+  };
+
+  // Load initial album images on mount
+  useEffect(() => {
+    loadInitialAlbums();
+  }, []);
 
   useEffect(() => {
     // Check if user is already authenticated
@@ -69,7 +108,7 @@ function App() {
             return {
               id: album.id,
               name: album.name,
-              radius: Math.random() * 30 + 20,
+              radius: 70,
               group: album.artists[0]?.name || 'Unknown Artist',
               img: album.images[0]?.url || `https://picsum.photos/seed/${displayedCount + index}/200`,
               album: album,
@@ -133,8 +172,9 @@ function App() {
     setIsAuthenticated(false);
     setUser(null);
     setAlbums([]);
-    setData([]);
     setError(null);
+    // Restore initial albums after logout
+    loadInitialAlbums();
   };
 
   return (
@@ -253,7 +293,9 @@ function App() {
             )}
           </div>
         ) : !isAuthenticated ? (
-          <div></div>
+          <>
+            <BubbleChart data={data} />
+          </>
         ) : albums.length === 0 ? (
           <div style={{ 
             display: 'flex', 

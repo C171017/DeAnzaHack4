@@ -1,0 +1,211 @@
+[
+    {
+        "id": "initial-1",
+        "name": "The Dark Side of the Moon",
+        "artists": [
+            {
+                "name": "Pink Floyd"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-1.jpg"
+            }
+        ],
+        "release_date": "1973-03-01",
+        "total_tracks": 10,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/4LH4d3cOWNNsVw41Gqt2kv"
+        }
+    },
+    {
+        "id": "initial-2",
+        "name": "Nevermind",
+        "artists": [
+            {
+                "name": "Nirvana"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-2.jpg"
+            }
+        ],
+        "release_date": "1991-09-24",
+        "total_tracks": 13,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/2UJcKiJxNryhL0FuR0mhjT"
+        }
+    },
+    {
+        "id": "initial-3",
+        "name": "Abbey Road",
+        "artists": [
+            {
+                "name": "The Beatles"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-3.jpg"
+            }
+        ],
+        "release_date": "1969-09-26",
+        "total_tracks": 17,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/0ETFjACtuP2ADo6LFhL6HN"
+        }
+    },
+    {
+        "id": "initial-4",
+        "name": "Led Zeppelin IV",
+        "artists": [
+            {
+                "name": "Led Zeppelin"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-4.jpg"
+            }
+        ],
+        "release_date": "1971-11-08",
+        "total_tracks": 8,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/44Ig8dzqOkvkGDzaUof9lK"
+        }
+    },
+    {
+        "id": "initial-5",
+        "name": "My Beautiful Dark Twisted Fantasy",
+        "artists": [
+            {
+                "name": "Kanye West"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-5.jpg"
+            }
+        ],
+        "release_date": "2010-11-22",
+        "total_tracks": 13,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/20r762YmB5HeofjMCiPMLv"
+        }
+    },
+    {
+        "id": "initial-6",
+        "name": "Unknown Pleasures",
+        "artists": [
+            {
+                "name": "Joy Division"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-6.jpg"
+            }
+        ],
+        "release_date": "1979-06-15",
+        "total_tracks": 10,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/0YWz3z8yQ2xrx5vN1b0pNT"
+        }
+    },
+    {
+        "id": "initial-7",
+        "name": "Richard D. James Album",
+        "artists": [
+            {
+                "name": "Aphex Twin"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-7.jpg"
+            }
+        ],
+        "release_date": "1996-11-04",
+        "total_tracks": 13,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/77Lae5VorRCNpgZFMW8yRO"
+        }
+    },
+    {
+        "id": "initial-8",
+        "name": "UTOPIA",
+        "artists": [
+            {
+                "name": "Travis Scott"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-8.jpg"
+            }
+        ],
+        "release_date": "2023-07-28",
+        "total_tracks": 19,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/18NOKLkZETa4sWwLMIm0UZ"
+        }
+    },
+    {
+        "id": "initial-9",
+        "name": "Random Access Memories",
+        "artists": [
+            {
+                "name": "Daft Punk"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-9.jpg"
+            }
+        ],
+        "release_date": "2013-05-17",
+        "total_tracks": 13,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/4m2880jivSbbyEGAKfITCa"
+        }
+    },
+    {
+        "id": "initial-10",
+        "name": "Prince",
+        "artists": [
+            {
+                "name": "Prince"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-10.jpg"
+            }
+        ],
+        "release_date": "1979-10-19",
+        "total_tracks": 9,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/3k9lL03kHgk9pRX0qKaEei"
+        }
+    },
+    {
+        "id": "initial-11",
+        "name": "The Velvet Underground & Nico",
+        "artists": [
+            {
+                "name": "The Velvet Underground & Nico"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-11.jpg"
+            }
+        ],
+        "release_date": "1967-03-12",
+        "total_tracks": 11,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/6lBN3Tzt61u8i9A1wgkzKh"
+        }
+    }
+]

@@ -1,42 +1,277 @@
-# Hacksify Project Documentation
+# Music Bubble Visualizer - Technical Documentation
 
 ## Overview
-Hacksify is a web application that visualizes music taste as interactive, magnetic bubbles. It uses D3.js for physics simulations and React for the UI.
+This application is a React-based music visualization tool that displays album covers as interactive, physics-based bubbles. It integrates with Spotify's Web API to fetch and display user's saved albums, or shows curated initial albums when not authenticated.
 
-## Recent Changes
+## Architecture
 
-### 1. Data Recording & Mock Data
-- **File**: `src/data/albums.json`
-- **Purpose**: To allow the application to function without requiring every user to log in with Spotify, we have recorded a set of mock album data.
-- **Structure**: The JSON file contains an array of album objects, each with:
-  - `id`: Unique identifier
-  - `name`: Album name
-  - `artists`: Array of artist objects
-  - `images`: Array of album art images
-  - `release_date`: Release date string
-  - `total_tracks`: Number of tracks
-  - `external_urls`: Links to Spotify
+### Core Components
 
-- **Integration**: `App.jsx` has been modified to load this data by default if the user is not authenticated. This ensures a seamless "demo mode" experience.
+#### 1. App.jsx (Main Application)
+**Purpose**: Main application component managing authentication state and album data.
 
-### 2. Magnet Feature
-- **File**: `src/components/BubbleChart.jsx`
-- **Description**: A new interactive feature that allows users to control the bubbles with their mouse or finger.
-- **Interaction**:
-  - **Desktop**: Click and hold the left mouse button.
-  - **Mobile**: Touch and hold the screen.
-- **Physics Implementation**:
-  - When the magnet is active (`mousedown`/`touchstart`), the default "center" force of the D3 simulation is disabled.
-  - A new `forceX` and `forceY` is applied, pulling all nodes towards the current cursor/touch coordinates.
-  - The `alphaTarget` is increased to `0.3` to keep the simulation active and responsive during the drag.
-  - Upon release (`mouseup`/`touchend`), the attraction forces are removed, and the default center force is re-enabled, allowing bubbles to settle back to the center.
+**Key Features**:
+- Spotify OAuth authentication flow
+- State management for user, albums, and authentication status
+- Initial album loading (11 curated albums from local assets)
+- Spotify album fetching (up to 50 albums)
+- Navigation between pages
 
-## Technical Details
-- **D3 Force Simulation**: The core of the visualization. It uses `forceManyBody` for repulsion (preventing overlap) and `forceCenter` for keeping bubbles on screen. The magnet feature dynamically modifies these forces.
-- **React Integration**: The D3 simulation is wrapped in a `useEffect` hook to integrate with React's lifecycle. Event listeners for the magnet feature are attached to the `window` and `svg` elements to ensure global capture of mouse movements.
+**State Variables**:
+- `data`: Array of album objects formatted for BubbleChart
+- `isAuthenticated`: Boolean authentication status
+- `user`: Spotify user profile object
+- `albums`: All fetched albums from Spotify
+- `loading`: Loading state
+- `error`: Error messages
 
-## How to Run
-1. `npm install`
-2. `npm run dev`
-3. Open the local server URL (usually http://localhost:5173)
-4. The app will load with demo data. Click and hold to test the magnet!
+**Key Functions**:
+- `loadInitialAlbums()`: Loads 11 local album images as bubbles
+- `checkAuthAndLoadAlbums(token)`: Validates token and loads user albums
+- `loadSavedAlbums(token)`: Fetches and transforms Spotify albums
+- `handleLogin()`: Initiates Spotify OAuth flow
+- `handleLogout()`: Clears tokens and restores initial albums
+
+**Data Transformation**:
+Each album is transformed into bubble data format:
+```javascript
+{
+  id: string,
+  name: string,
+  radius: 70,  // Fixed size for all bubbles
+  group: string,  // Artist name
+  img: string,  // Image URL
+  artist: string,
+  releaseDate: string,
+  totalTracks: number
+}
+```
+
+#### 2. BubbleChart.jsx (Visualization Component)
+**Purpose**: Renders album covers as interactive square bubbles using D3.js.
+
+**Key Features**:
+- D3.js force simulation for physics
+- Perfect square rendering (140x140px) preserving album cover aspect ratio
+- Boundary constraints keeping bubbles within viewport
+- Drag interaction
+- Random initial positioning
+
+**Force Simulation**:
+- `forceManyBody`: Repulsion strength of 5
+- `forceCenter`: Centers bubbles in viewport
+- `forceCollide`: Collision detection using diagonal distance (radius * sqrt(2))
+
+**Boundary Constraints**:
+- Calculates diagonal distance for each square
+- Enforces min/max X and Y positions in simulation tick
+- Stops velocity when hitting boundaries
+- Constrains drag positions within viewport
+
+**Rendering**:
+- Uses SVG with patterns for image filling
+- `preserveAspectRatio: 'xMidYMid meet'` to maintain album cover proportions
+- Drop shadows and subtle borders for visual depth
+- White background (#ffffff)
+
+**Initial Positioning**:
+- Random positions calculated with padding = diagonal distance
+- Ensures entire square stays within viewport bounds
+
+#### 3. Spotify Authentication (spotifyAuth.js)
+**Purpose**: Handles OAuth 2.0 flow with PKCE for secure authentication.
+
+**Flow**:
+1. Generate code verifier (32 random bytes, base64url encoded)
+2. Generate code challenge (SHA-256 hash of verifier)
+3. Redirect to Spotify authorization with challenge
+4. Exchange authorization code for access token using verifier
+5. Store tokens in localStorage
+
+**Configuration**:
+- Client ID: `91cf2887acc54bb1ab12ac44348596ea`
+- Redirect URI: Dynamically determined based on hostname
+  - Production: `https://music.c171017.com/callback`
+  - Local: `http://127.0.0.1:{port}/callback`
+- Scopes: `user-library-read`, `user-read-email`, `user-read-private`
+
+**Token Storage**:
+- Access token: `localStorage.getItem('spotify_access_token')`
+- Refresh token: `localStorage.getItem('spotify_refresh_token')`
+- Code verifier: `sessionStorage.getItem('code_verifier')` (temporary)
+
+#### 4. Spotify API Client (spotifyApi.js)
+**Purpose**: Makes authenticated requests to Spotify Web API.
+
+**Endpoints Used**:
+- `GET /me`: User profile
+- `GET /me/albums`: User's saved albums (paginated)
+
+**Pagination**:
+- Default limit: 50 albums per request
+- Handles pagination with offset parameter
+- Safety limit: 1000 albums maximum
+
+**Error Handling**:
+- 401 responses trigger re-authentication
+- API errors include descriptive messages
+
+#### 5. Additional Pages
+
+**BlankPage.jsx**:
+- Generates 100 mock music tracks
+- Displays in responsive grid layout
+- Each card shows album cover, track name, and artist
+
+**Page3.jsx**:
+- Table view of music tracks with tags
+- Tags include: genre, mood, color
+- Data persisted in localStorage
+- Each track has 1-3 random tags
+
+**Page4.jsx**:
+- Interactive canvas with tag bubbles and music bubbles
+- Drag tags from list to canvas
+- Music bubbles automatically follow matching tag bubbles
+- Complex physics simulation for music bubble positioning
+- Real-time collision detection and boundary constraints
+
+## Data Structures
+
+### Album Object (BubbleChart Format)
+```javascript
+{
+  id: string,              // Unique identifier
+  name: string,            // Album name
+  radius: number,          // Bubble radius (70 for all)
+  group: string,           // Artist name
+  img: string,             // Image URL or imported asset
+  artist: string,          // Artist name
+  releaseDate: string,     // Release date (ISO format)
+  totalTracks: number      // Number of tracks
+}
+```
+
+### Spotify Album Response
+```javascript
+{
+  items: [{
+    album: {
+      id: string,
+      name: string,
+      artists: [{ name: string }],
+      images: [{ url: string }],
+      release_date: string,
+      total_tracks: number,
+      external_urls: { spotify: string }
+    }
+  }],
+  next: string | null     // Pagination URL
+}
+```
+
+## File Structure
+
+### Data Files
+- `src/data/albums.json`: Sample album data (10 albums)
+- `src/data/initialAlbums.json`: Metadata for 11 initial screen albums
+
+### Image Assets
+- `src/assets/images/initial-screen-albums/`: 11 album cover images (album-1.jpg through album-11.jpg)
+
+### Initial Albums
+1. The Dark Side of the Moon - Pink Floyd
+2. Nevermind - Nirvana
+3. Abbey Road - The Beatles
+4. Led Zeppelin IV - Led Zeppelin
+5. My Beautiful Dark Twisted Fantasy - Kanye West
+6. Unknown Pleasures - Joy Division
+7. Richard D. James Album - Aphex Twin
+8. UTOPIA - Travis Scott
+9. Random Access Memories - Daft Punk
+10. Prince - Prince
+11. The Velvet Underground & Nico
+
+## Technical Implementation Details
+
+### D3.js Force Simulation
+The bubble chart uses D3's force simulation with three forces:
+1. **Charge Force**: Repulsion between bubbles (strength: 5)
+2. **Center Force**: Pulls bubbles toward viewport center
+3. **Collision Force**: Prevents overlap using diagonal distance
+
+### Boundary Constraints
+For square bubbles, boundary calculations use diagonal distance:
+- Diagonal = radius * sqrt(2)
+- Min X/Y = diagonal
+- Max X/Y = viewport dimension - diagonal
+
+This ensures entire square stays visible even when rotated.
+
+### Image Rendering
+- SVG patterns used to fill rectangles with images
+- `objectBoundingBox` units for pattern scaling
+- `preserveAspectRatio: 'xMidYMid meet'` maintains album cover proportions
+
+### State Management
+- React hooks (useState, useEffect) for component state
+- LocalStorage for token persistence
+- SessionStorage for temporary OAuth data (code verifier)
+
+## Routing
+
+Routes defined in `main.jsx`:
+- `/`: Home page with bubble visualization
+- `/callback`: OAuth callback handler
+- `/blank`: Music collection grid view
+- `/page3`: Music chart with tags
+- `/page4`: Interactive tag/music bubble canvas
+
+## Styling
+
+- CSS Variables defined in `index.css`:
+  - `--bg-color: #ffffff` (white background)
+  - `--accent-color: #a600ff` (purple accent)
+  - `--text-primary: #000000` (black text)
+- Inline styles for dynamic components
+- Component-specific CSS files for pages
+
+## Error Handling
+
+- Authentication errors: Display error message, redirect after 3 seconds
+- API errors: Show descriptive error, allow retry
+- Token expiration: Clear tokens, require re-authentication
+- Network errors: Caught and displayed to user
+
+## Performance Considerations
+
+- Limits album display to 50 for performance
+- Incremental loading of albums
+- D3 simulation cleanup on unmount
+- RequestAnimationFrame for smooth animations
+- LocalStorage caching for Page3/Page4 data
+
+## Browser Compatibility
+
+- Requires modern browser with:
+  - ES6+ support
+  - Web Crypto API (for PKCE)
+  - LocalStorage/SessionStorage
+  - SVG support
+
+## Security
+
+- PKCE flow for OAuth security
+- Tokens stored in localStorage (consider httpOnly cookies for production)
+- No sensitive data in client-side code
+- Redirect URI validation
+
+## Future Enhancements
+
+Potential improvements:
+- Refresh token rotation
+- Genre-based clustering
+- Album details on hover/click
+- Search and filter functionality
+- Playlist creation from bubbles
+- Export/import bubble configurations
