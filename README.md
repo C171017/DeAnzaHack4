@@ -6,8 +6,6 @@ A React web application that visualizes music albums as interactive, physics-bas
 
 ## Things needed to add
 
-the top 3 10 coordination system
-zoom
 auto size svg?
 a fake 3d vertical time line
 manually edit genre

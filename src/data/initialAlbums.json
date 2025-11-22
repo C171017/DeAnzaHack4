@@ -13,7 +13,11 @@
             }
         ],
         "release_date": "1973-03-01",
-        "genre": "Progressive Rock",
+        "genres": [
+            {"name": "Rock", "weight": 10},
+            {"name": "Electronic", "weight": 4},
+            {"name": "Jazz", "weight": 2}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/4LH4d3cOWNNsVw41Gqt2kv"
         }
@@ -32,7 +36,11 @@
             }
         ],
         "release_date": "1991-09-24",
-        "genre": "Grunge",
+        "genres": [
+            {"name": "Rock", "weight": 10},
+            {"name": "Metal", "weight": 3},
+            {"name": "Folk", "weight": 2}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/2UJcKiJxNryhL0FuR0mhjT"
         }
@@ -51,7 +59,11 @@
             }
         ],
         "release_date": "1969-09-26",
-        "genre": "Rock",
+        "genres": [
+            {"name": "Rock", "weight": 9},
+            {"name": "Pop", "weight": 5},
+            {"name": "Folk", "weight": 3}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/0ETFjACtuP2ADo6LFhL6HN"
         }
@@ -70,7 +82,11 @@
             }
         ],
         "release_date": "1971-11-08",
-        "genre": "Hard Rock",
+        "genres": [
+            {"name": "Rock", "weight": 10},
+            {"name": "Folk", "weight": 4},
+            {"name": "Metal", "weight": 3}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/44Ig8dzqOkvkGDzaUof9lK"
         }
@@ -89,7 +105,11 @@
             }
         ],
         "release_date": "2010-11-22",
-        "genre": "Hip Hop",
+        "genres": [
+            {"name": "HipHop", "weight": 10},
+            {"name": "R&B", "weight": 5},
+            {"name": "Pop", "weight": 3}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/20r762YmB5HeofjMCiPMLv"
         }
@@ -108,7 +128,11 @@
             }
         ],
         "release_date": "1979-06-15",
-        "genre": "Post-Punk",
+        "genres": [
+            {"name": "Rock", "weight": 9},
+            {"name": "Electronic", "weight": 4},
+            {"name": "Folk", "weight": 2}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/0YWz3z8yQ2xrx5vN1b0pNT"
         }
@@ -127,7 +151,11 @@
             }
         ],
         "release_date": "1996-11-04",
-        "genre": "Electronic",
+        "genres": [
+            {"name": "Electronic", "weight": 10},
+            {"name": "Rock", "weight": 2},
+            {"name": "Jazz", "weight": 1}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/77Lae5VorRCNpgZFMW8yRO"
         }
@@ -146,7 +174,11 @@
             }
         ],
         "release_date": "2023-07-28",
-        "genre": "Hip Hop",
+        "genres": [
+            {"name": "HipHop", "weight": 9},
+            {"name": "Electronic", "weight": 5},
+            {"name": "R&B", "weight": 3}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/18NOKLkZETa4sWwLMIm0UZ"
         }
@@ -165,7 +197,11 @@
             }
         ],
         "release_date": "2013-05-17",
-        "genre": "Electronic",
+        "genres": [
+            {"name": "Electronic", "weight": 8},
+            {"name": "Pop", "weight": 6},
+            {"name": "Soul", "weight": 4}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/4m2880jivSbbyEGAKfITCa"
         }
@@ -184,7 +220,11 @@
             }
         ],
         "release_date": "1979-10-19",
-        "genre": "Funk",
+        "genres": [
+            {"name": "R&B", "weight": 8},
+            {"name": "Soul", "weight": 7},
+            {"name": "Rock", "weight": 4}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/3k9lL03kHgk9pRX0qKaEei"
         }
@@ -203,7 +243,11 @@
             }
         ],
         "release_date": "1967-03-12",
-        "genre": "Art Rock",
+        "genres": [
+            {"name": "Rock", "weight": 9},
+            {"name": "Folk", "weight": 4},
+            {"name": "Electronic", "weight": 2}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/6lBN3Tzt61u8i9A1wgkzKh"
         }
@@ -222,7 +266,11 @@
             }
         ],
         "release_date": "1991-11-04",
-        "genre": "Shoegaze",
+        "genres": [
+            {"name": "Rock", "weight": 9},
+            {"name": "Electronic", "weight": 5},
+            {"name": "Pop", "weight": 2}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/3GH4IiI6jQAIvnHVdb5FB6"
         }
@@ -241,7 +289,11 @@
             }
         ],
         "release_date": "1975-11-10",
-        "genre": "Punk Rock",
+        "genres": [
+            {"name": "Rock", "weight": 10},
+            {"name": "Folk", "weight": 3},
+            {"name": "Soul", "weight": 2}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/5vxNA2I8dcS8bLoIkugLsB"
         }
@@ -260,7 +312,11 @@
             }
         ],
         "release_date": "1979-12-14",
-        "genre": "Punk Rock",
+        "genres": [
+            {"name": "Rock", "weight": 9},
+            {"name": "Soul", "weight": 4},
+            {"name": "Folk", "weight": 3}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/6FCzvataOZh68j8OKzOt9a"
         }
@@ -279,7 +335,11 @@
             }
         ],
         "release_date": "1975-08-25",
-        "genre": "Rock",
+        "genres": [
+            {"name": "Rock", "weight": 10},
+            {"name": "Folk", "weight": 4},
+            {"name": "Soul", "weight": 3}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/4YhEjYwqJqpb2zqfXFEUlb"
         }
@@ -298,7 +358,11 @@
             }
         ],
         "release_date": "1967-05-26",
-        "genre": "Rock",
+        "genres": [
+            {"name": "Rock", "weight": 8},
+            {"name": "Pop", "weight": 7},
+            {"name": "Folk", "weight": 3}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/6QaVfG1pHYl1z15ZxkvVDW"
         }
@@ -317,7 +381,11 @@
             }
         ],
         "release_date": "1973-04-13",
-        "genre": "Glam Rock",
+        "genres": [
+            {"name": "Rock", "weight": 9},
+            {"name": "Pop", "weight": 5},
+            {"name": "Soul", "weight": 3}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/3XMzQpPLMkO4WkFh7AydoJ"
         }
@@ -336,7 +404,11 @@
             }
         ],
         "release_date": "1984-09-26",
-        "genre": "Funk",
+        "genres": [
+            {"name": "R&B", "weight": 8},
+            {"name": "Rock", "weight": 7},
+            {"name": "Soul", "weight": 6}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/7nXJ5k4XgRj5OLg9m8V3zc"
         }
@@ -355,7 +427,11 @@
             }
         ],
         "release_date": "1992-10-05",
-        "genre": "Alternative Rock",
+        "genres": [
+            {"name": "Rock", "weight": 9},
+            {"name": "Folk", "weight": 5},
+            {"name": "Pop", "weight": 3}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/0BiNb8HYR4JvuxUa31Z58Q"
         }
@@ -374,7 +450,11 @@
             }
         ],
         "release_date": "1990-09-24",
-        "genre": "Thrash Metal",
+        "genres": [
+            {"name": "Metal", "weight": 10},
+            {"name": "Rock", "weight": 4},
+            {"name": "Electronic", "weight": 1}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/5KS3OHMy8AleH0x4UTi6HE"
         }
@@ -393,7 +473,11 @@
             }
         ],
         "release_date": "1993-11-09",
-        "genre": "Hip Hop",
+        "genres": [
+            {"name": "HipHop", "weight": 10},
+            {"name": "Soul", "weight": 3},
+            {"name": "R&B", "weight": 2}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/4tC4W6A0p1w3d3Xew8A5Sl"
         }
@@ -412,7 +496,11 @@
             }
         ],
         "release_date": "1998-08-25",
-        "genre": "Hip Hop",
+        "genres": [
+            {"name": "HipHop", "weight": 7},
+            {"name": "R&B", "weight": 8},
+            {"name": "Soul", "weight": 6}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/1BZoqf8Zje5nGdwZhOjAtD"
         }
@@ -431,7 +519,11 @@
             }
         ],
         "release_date": "2016-08-20",
-        "genre": "R&B",
+        "genres": [
+            {"name": "R&B", "weight": 9},
+            {"name": "HipHop", "weight": 5},
+            {"name": "Soul", "weight": 4}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/3mH6qwIy9crq0I9YQbOuDf"
         }
@@ -450,7 +542,11 @@
             }
         ],
         "release_date": "2019-05-17",
-        "genre": "Hip Hop",
+        "genres": [
+            {"name": "HipHop", "weight": 8},
+            {"name": "R&B", "weight": 6},
+            {"name": "Soul", "weight": 5}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/5zi7WsKlIiUXv09tbGLKsE"
         }
@@ -469,7 +565,11 @@
             }
         ],
         "release_date": "2005-09-27",
-        "genre": "Pop Punk",
+        "genres": [
+            {"name": "Rock", "weight": 8},
+            {"name": "Pop", "weight": 7},
+            {"name": "Electronic", "weight": 3}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/2YeOh2Jq6ih3Vqu8lHCz3A"
         }
@@ -488,7 +588,11 @@
             }
         ],
         "release_date": "1970-11-09",
-        "genre": "Blues Rock",
+        "genres": [
+            {"name": "Rock", "weight": 9},
+            {"name": "Soul", "weight": 4},
+            {"name": "Folk", "weight": 3}
+        ],
         "external_urls": {
             "spotify": "https://open.spotify.com/album/5iIWnMgvSM8uEBwXKsPcXM"
         }
