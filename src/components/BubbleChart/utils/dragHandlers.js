@@ -10,7 +10,8 @@ export const createDragHandlers = (simulation, albumCollisionPadding) => {
     }
     d.fx = d.x;
     d.fy = d.y;
-    simulation.alphaTarget(0.3).restart();
+    // Boost alpha and set target to keep simulation active during drag
+    simulation.alpha(1).alphaTarget(0.3).restart();
   };
 
   const dragged = (event, d) => {
@@ -26,7 +27,8 @@ export const createDragHandlers = (simulation, albumCollisionPadding) => {
     
     d.fx = Math.max(minX, Math.min(maxX, event.x));
     d.fy = Math.max(minY, Math.min(maxY, event.y));
-    simulation.alphaTarget(0.3).restart();
+    // Continuously boost alpha during drag to keep simulation responsive
+    simulation.alpha(1).alphaTarget(0.3).restart();
   };
 
   const dragended = (event, d) => {
@@ -35,6 +37,7 @@ export const createDragHandlers = (simulation, albumCollisionPadding) => {
     }
     d.fx = null;
     d.fy = null;
+    // Reset alpha target to allow natural decay
     simulation.alphaTarget(0);
   };
 
@@ -42,23 +45,16 @@ export const createDragHandlers = (simulation, albumCollisionPadding) => {
 };
 
 /**
- * Setup click handlers for album nodes
+ * Setup double-click handlers for album nodes
  */
 export const setupAlbumClickHandlers = (albumNodes) => {
-  let clickStartPos = null;
-  
   albumNodes
-    .on('mousedown', function(event, d) {
-      clickStartPos = { x: d.x, y: d.y };
-    })
-    .on('click', function(event, d) {
-      if (clickStartPos && 
-          Math.abs(d.x - clickStartPos.x) < 1 && 
-          Math.abs(d.y - clickStartPos.y) < 1) {
-        if (d.spotifyUrl) {
-          window.open(d.spotifyUrl, '_blank');
-        }
+    .on('dblclick', function(event, d) {
+      event.stopPropagation();
+      // For initial albums, check both spotifyUrl and external_urls.spotify
+      const url = d.spotifyUrl || (d.external_urls && d.external_urls.spotify);
+      if (url) {
+        window.open(url, '_blank');
       }
-      clickStartPos = null;
     });
 };

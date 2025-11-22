@@ -185,62 +185,43 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
     // Render albums and genres if any
     let simulation = null;
     if (allData.length > 0) {
-      // Preserve existing positions from simulation if it exists (before stopping)
-      let existingPositions = new Map();
+      // Stop previous simulation if it exists
       if (simulationRef.current) {
-        const existingNodes = simulationRef.current.nodes();
-        existingNodes.forEach(node => {
-          if (node.x !== undefined && node.y !== undefined) {
-            existingPositions.set(node.id, { x: node.x, y: node.y });
-          }
-        });
         simulationRef.current.stop();
       }
       
-      // Initialize positions for items that don't have them, preserving from simulation if available
+      // Initialize positions for items that don't have them (same as BubbleChart)
       const dataWithPositions = allData.map(item => {
-        // First check if we have this item in the existing simulation
-        const existingPos = existingPositions.get(item.id);
-        if (existingPos) {
-          // Preserve position from simulation
-          return {
-            ...item,
-            x: existingPos.x,
-            y: existingPos.y
-          };
-        }
-        // Otherwise use position from item data or generate random
-        if (item.x !== undefined && item.y !== undefined) {
-          return item;
-        }
-        return {
-          ...item,
-          x: Math.random() * (VIEWBOX_SIZE - item.radius * 2) + item.radius,
-          y: Math.random() * (VIEWBOX_SIZE - item.radius * 2) + item.radius
-        };
+        // Use position from item data if available, otherwise will be initialized by initializeNodePositions
+        return item;
       });
 
-      // Create new simulation
+      // Initialize random positions (same as BubbleChart)
+      initializeNodePositions(dataWithPositions, VIEWBOX_SIZE, ALBUM_COLLISION_PADDING);
+
+      // Create simulation (same as BubbleChart)
       simulation = createSimulation(dataWithPositions, ALBUM_COLLISION_PADDING);
       simulationRef.current = simulation;
 
-      // Use D3's enter/update/exit pattern for all nodes
+      // Create node groups (same pattern as BubbleChart, but adapted for updates)
       const nodes = container.selectAll('.node')
         .data(dataWithPositions, d => d.id);
 
       // Remove exiting nodes
       nodes.exit().remove();
 
-      // Enter new nodes
+      // Enter new nodes (same as BubbleChart)
       const nodesEnter = nodes.enter()
         .append('g')
         .attr('class', d => d.isGenre ? 'node genre-node' : 'node album-node')
         .attr('data-id', d => d.id)
-        .style('cursor', 'grab')
-        .attr('transform', d => `translate(${d.x},${d.y})`);
+        .style('cursor', 'grab');
 
       // Merge enter and update
       const nodesMerged = nodesEnter.merge(nodes);
+      
+      // Update transform for all nodes (same as BubbleChart)
+      nodesMerged.attr('transform', d => `translate(${d.x},${d.y})`);
 
       // Create gradients for genres (needed before rendering)
       const genreNodes = nodesMerged.filter(d => d.isGenre);
@@ -278,7 +259,7 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
           return '#333';
         });
 
-      // Setup drag handlers for all nodes (D3 drag for canvas movement)
+      // Setup drag handlers (exact same as BubbleChart)
       const { dragstarted, dragged, dragended } = createDragHandlers(simulation, ALBUM_COLLISION_PADDING);
       const nodeDrag = d3.drag()
         .on('start', function(event, d) {
@@ -306,7 +287,7 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
           dragended(event, d);
           d3.select(this).style('cursor', 'grab');
           
-          // Save position after drag ends
+          // Save position after drag ends (EmptyCanvas specific)
           if (onPositionUpdate && d.x !== undefined && d.y !== undefined) {
             onPositionUpdate({
               ...d,
@@ -329,7 +310,7 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
       // Setup click handlers for albums only
       setupAlbumClickHandlers(albumNodes);
 
-      // Simulation tick with boundary constraints
+      // Simulation tick with boundary constraints (same as BubbleChart)
       simulation.on('tick', () => {
         enforceBoundaries(dataWithPositions, VIEWBOX_SIZE, ALBUM_COLLISION_PADDING);
         nodesMerged.attr('transform', d => `translate(${d.x},${d.y})`);
@@ -366,11 +347,13 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
 
     // Restore previous zoom transform or set to identity
     const savedTransform = zoomTransformRef.current || d3.zoomIdentity;
-    // Apply transform without triggering events
+    // Apply transform to container
     container.attr('transform', `translate(${savedTransform.x}, ${savedTransform.y}) scale(${savedTransform.k})`);
-    // Set the zoom state without dispatching events
-    svg.call(zoom.transform, savedTransform)
+    // Set up zoom behavior on SVG (same as BubbleChart)
+    svg.call(zoom)
       .on('dblclick.zoom', null);
+    // Apply saved transform after setting up zoom behavior
+    svg.call(zoom.transform, savedTransform);
     
     // Update the current transform reference
     currentTransform = savedTransform;
