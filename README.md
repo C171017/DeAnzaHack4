@@ -4,6 +4,15 @@ A React web application that visualizes music albums as interactive, physics-bas
 
 ## Features
 
+## Things needed to add
+
+the top 3 10 coordination system
+zoom
+auto size svg?
+a fake 3d vertical time line
+manually edit genre
+add color pattern
+
 ### Home Page (Bubble Visualization)
 - **Initial Display**: Shows 11 curated album covers as square bubbles when not authenticated
 - **Spotify Integration**: After authentication, displays user's saved Spotify albums (up to 50 albums)

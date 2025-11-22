@@ -238,73 +238,65 @@ const BubbleChart = ({ data }) => {
             simulation.alphaTarget(0);
         }
 
-        // Calculate panning boundaries relative to viewport
-        // Margin is the distance between SVG boundary and viewport boundary (same for left and top)
-        const viewportMargin = 100; // pixels - consistent margin from viewport edges
+        // Zoom limits - adjust these values to change zoom range
+        const MIN_ZOOM = 0.5; // Minimum zoom out level (e.g., 0.5 = 0.5x zoom)
+        const MAX_ZOOM = 3; // Maximum zoom in level (e.g., 3 = 3x zoom)
         
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        
-        // Translation is in SVG coordinate space (same as viewBox: 0 to 1920)
-        // The SVG element is positioned at (svgLeft, svgTop) in viewport coordinates
-        // The viewBox shows the container content, which we translate
-        
-        // Calculate how much the SVG extends beyond viewport when centered
-        // SVG left edge is at svgLeft (negative if extends left of viewport)
-        // SVG right edge is at svgLeft + svgSize
-        const svgLeftEdge = svgLeft;
-        const svgRightEdge = svgLeft + svgSize;
-        const svgTopEdge = svgTop;
-        const svgBottomEdge = svgTop + svgSize;
-        
-        // Calculate how much we can translate while maintaining margin
-        // When translating right (positive X): container moves right, showing more left content
-        // We can translate until the left edge of visible content is viewportMargin from viewport left
-        // The viewBox maps viewBoxSize (1920) to svgSize pixels on screen
-        const scaleFactor = svgSize / viewBoxSize; // pixels per viewBox unit
-        
-        // Maximum translation right/down: allow until content edge reaches viewportMargin from viewport edge
-        // If SVG left edge is at position X, and we want viewportMargin margin:
-        // We can translate by: (svgLeftEdge + viewportMargin) / scaleFactor
-        const maxTranslateX = Math.max(0, (Math.max(0, -svgLeftEdge) + viewportMargin) / scaleFactor);
-        const maxTranslateY = Math.max(0, (Math.max(0, -svgTopEdge) + viewportMargin) / scaleFactor);
-        
-        // Maximum translation left/up: allow until content edge reaches viewportMargin from viewport edge
-        // If SVG right edge extends beyond viewport, we can translate left by that amount plus margin
-        const svgExtendsRight = Math.max(0, svgRightEdge - viewportWidth);
-        const svgExtendsBottom = Math.max(0, svgBottomEdge - viewportHeight);
-        const minTranslateX = -Math.max(0, (svgExtendsRight + viewportMargin) / scaleFactor);
-        const minTranslateY = -Math.max(0, (svgExtendsBottom + viewportMargin) / scaleFactor);
-
-        // Set up zoom behavior for panning only (no zoom)
-        let isUpdatingTransform = false; // Flag to prevent recursive updates
         const zoom = d3.zoom()
-            .scaleExtent([1, 1]) // Lock scale at 1 (no zooming)
+            .scaleExtent([MIN_ZOOM, MAX_ZOOM])
             .on('zoom', (event) => {
-                if (isUpdatingTransform) return; // Prevent recursive calls
+                const currentScale = event.transform.k;
+                const translateX = event.transform.x;
+                const translateY = event.transform.y;
                 
-                // Clamp translation values to boundaries to prevent panning too far
-                const clampedX = Math.max(minTranslateX, Math.min(maxTranslateX, event.transform.x));
-                const clampedY = Math.max(minTranslateY, Math.min(maxTranslateY, event.transform.y));
-                
-                // Only apply translation, ignore scale
-                container.attr('transform', `translate(${clampedX},${clampedY})`);
-                
-                // If we clamped, update the zoom transform to prevent sticky behavior
-                if (clampedX !== event.transform.x || clampedY !== event.transform.y) {
-                    isUpdatingTransform = true;
-                    // Use setTimeout to update transform after current event completes
-                    setTimeout(() => {
-                        svg.call(zoom.transform, d3.zoomIdentity.translate(clampedX, clampedY));
-                        isUpdatingTransform = false;
-                    }, 0);
-                }
+                // Apply transform
+                container.attr('transform', `translate(${translateX},${translateY}) scale(${currentScale})`);
             })
             .filter((event) => {
-                // Disable mouse wheel zooming
-                if (event.type === 'wheel') return false;
-                // Allow touch events for mobile panning
-                if (event.type === 'touchstart' || event.type === 'touchmove') return true;
+                // Handle wheel events (mouse wheel and touchpad)
+                if (event.type === 'wheel') {
+                    // Check if clicking on a node - if so, don't zoom
+                    const target = event.target;
+                    if (target) {
+                        let element = target;
+                        while (element && element !== svg.node()) {
+                            if (element.classList && element.classList.contains('node')) {
+                                return false; // Don't allow zoom when hovering over node
+                            }
+                            element = element.parentNode;
+                        }
+                    }
+                    
+                    // For touchpad: only allow pinch-to-zoom (ctrlKey pressed) or actual zoom gestures
+                    // Block two-finger scrolling (wheel events without ctrlKey that are scroll gestures)
+                    // Pinch-to-zoom on touchpad typically has ctrlKey pressed or has very small deltaY
+                    // Two-finger scrolling has larger deltaY without ctrlKey
+                    if (event.ctrlKey || event.metaKey) {
+                        // Ctrl/Cmd + wheel = pinch-to-zoom, allow it
+                        return true;
+                    }
+                    
+                    // Check if this is a scroll gesture (large deltaY) vs zoom gesture (small deltaY)
+                    // Touchpad two-finger scroll has larger delta values
+                    // Pinch-to-zoom gestures typically have smaller, more controlled delta values
+                    const isScrollGesture = Math.abs(event.deltaY) > 10 && !event.ctrlKey && !event.metaKey;
+                    
+                    if (isScrollGesture) {
+                        // This is likely two-finger scrolling on touchpad, block it
+                        return false;
+                    }
+                    
+                    // Allow other wheel events (actual zoom gestures)
+                    return true;
+                }
+                
+                // Allow touch events for mobile panning and pinch-to-zoom
+                // D3 automatically handles pinch-to-zoom detection for touch events
+                if (event.type === 'touchstart' || event.type === 'touchmove') {
+                    // Only allow if it's a pinch gesture (2 touches) or single touch pan
+                    // D3's zoom behavior will handle this automatically
+                    return true;
+                }
                 
                 // For mouse events, check if clicking on a node
                 const target = event.target;
@@ -323,8 +315,8 @@ const BubbleChart = ({ data }) => {
             });
 
         // Apply zoom behavior to SVG
-        // Initialize container transform to (0, 0) explicitly
-        container.attr('transform', 'translate(0, 0)');
+        // Initialize container transform to (0, 0) with scale 1
+        container.attr('transform', 'translate(0, 0) scale(1)');
         svg.call(zoom)
             .on('dblclick.zoom', null); // Disable double-click zoom
 
