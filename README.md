@@ -44,19 +44,36 @@ backend automatic sorting
 
 ```
 src/
-├── App.jsx                 # Main application component with Spotify auth
+├── App.jsx                 # Main application component
 ├── Callback.jsx            # OAuth callback handler
 ├── components/
-│   ├── BubbleChart.jsx     # D3.js bubble visualization component
-│   ├── BlankPage.jsx       # Grid view of music tracks
-│   ├── Page3.jsx           # Table view with tags
-│   └── Page4.jsx           # Interactive tag/music bubble canvas
+│   ├── BubbleChart/        # Modular bubble chart component
+│   │   ├── BubbleChart.jsx # Main bubble chart component
+│   │   ├── constants.js    # Configuration constants (genres, colors, etc.)
+│   │   ├── index.js        # Component export
+│   │   └── utils/          # Utility modules
+│   │       ├── colorUtils.js      # Color blending utilities
+│   │       ├── dragHandlers.js   # Drag and click handlers
+│   │       ├── rendering.js      # Node rendering logic
+│   │       ├── scrollbars.js     # Scrollbar management
+│   │       ├── simulation.js     # D3 force simulation setup
+│   │       └── zoomPan.js        # Zoom and pan functionality
+│   ├── LoginButton.jsx     # Login/logout button component
+│   ├── LoadingState.jsx    # Loading indicator component
+│   ├── ErrorState.jsx      # Error display component
+│   ├── EmptyState.jsx     # Empty state component
+│   ├── BlankPage.jsx      # Grid view of music tracks
+│   ├── Page3.jsx          # Table view with tags
+│   └── Page4.jsx          # Interactive tag/music bubble canvas
+├── hooks/
+│   ├── useSpotifyAuth.js   # Spotify authentication hook
+│   └── useAlbums.js        # Album data management hook
 ├── data/
 │   ├── albums.json         # Sample album data
 │   └── initialAlbums.json  # Initial screen albums data
 ├── assets/
 │   └── images/
-│       └── initial-screen-albums/  # 11 album cover images
+│       └── initial-screen-albums/  # Album cover images
 └── utils/
     ├── spotifyAuth.js      # Spotify OAuth authentication
     └── spotifyApi.js       # Spotify API client
@@ -112,19 +129,38 @@ src/
 ## Key Implementation Details
 
 ### BubbleChart Component
-- Uses D3.js force simulation with:
-  - `forceManyBody`: Repulsion between bubbles
-  - `forceCenter`: Centering force
-  - `forceCollide`: Collision detection using diagonal distance for squares
+The BubbleChart component has been refactored into a modular structure for better maintainability:
+
+- **Main Component** (`BubbleChart.jsx`): Orchestrates the visualization setup
+- **Simulation** (`utils/simulation.js`): D3.js force simulation with collision detection
+- **Rendering** (`utils/rendering.js`): Handles rendering of album covers, genre circles, and text labels
+- **Drag Handlers** (`utils/dragHandlers.js`): Manages drag interactions and click events
+- **Zoom/Pan** (`utils/zoomPan.js`): Implements zoom and pan functionality with trackpad support
+- **Scrollbars** (`utils/scrollbars.js`): Custom scrollbar implementation for navigation
+- **Constants** (`constants.js`): Centralized configuration (genres, colors, dimensions)
+
+**Features:**
+- D3.js force simulation with collision detection
 - Boundary constraints prevent bubbles from leaving viewport
 - Random initial positioning with proper padding
 - Drag interaction with position constraints
+- Zoom and pan with scrollbar navigation
+- Genre-based color visualization with gradient effects
 
 ### Spotify Integration
 - OAuth 2.0 Authorization Code flow with PKCE
+- Custom hooks for state management:
+  - `useSpotifyAuth`: Handles authentication state and user profile
+  - `useAlbums`: Manages album data loading and transformation
 - Stores access token in localStorage
 - Fetches user's saved albums with pagination
 - Displays first 50 albums incrementally
+
+### Component Architecture
+- **Modular Design**: Large components split into focused, reusable modules
+- **Custom Hooks**: Business logic extracted into reusable hooks
+- **UI Components**: Reusable presentational components (LoginButton, LoadingState, etc.)
+- **Separation of Concerns**: Clear separation between UI, business logic, and utilities
 
 ### Data Files
 - `albums.json`: Sample album data structure
