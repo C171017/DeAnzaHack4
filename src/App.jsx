@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import BubbleChart from './components/BubbleChart';
 import { getAuthorizationUrl, getStoredAccessToken, clearTokens } from './utils/spotifyAuth';
 import { getUserProfile, getSavedAlbums } from './utils/spotifyApi';
@@ -34,7 +33,6 @@ import album25 from './assets/images/initial-screen-albums/album-25.jpg';
 import album26 from './assets/images/initial-screen-albums/album-26.jpg';
 
 function App() {
-  const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
@@ -235,40 +233,6 @@ function App() {
         )}
       </div>
       <main className="visualizer-container">
-        {/* Fixed Arrow Button */}
-        <button
-          onClick={() => navigate('/blank')}
-          className="arrow-button fixed-arrow-button"
-          style={{
-            position: 'fixed',
-            bottom: '30px',
-            right: '30px',
-            width: '50px',
-            height: '50px',
-            borderRadius: '50%',
-            backgroundColor: 'var(--accent-color)',
-            color: 'white',
-            border: 'none',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '24px',
-            boxShadow: '0 4px 12px rgba(166, 0, 255, 0.4)',
-            transition: 'all 0.3s ease',
-            zIndex: 1000
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.transform = 'scale(1.1)';
-            e.target.style.backgroundColor = '#ff5500';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = 'scale(1)';
-            e.target.style.backgroundColor = 'var(--accent-color)';
-          }}
-        >
-          →
-        </button>
         {loading ? (
           <div style={{ 
             display: 'flex', 
