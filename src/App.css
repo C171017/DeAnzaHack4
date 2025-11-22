@@ -51,6 +51,9 @@
     transform: translateX(-50%);
     z-index: 1000;
     pointer-events: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .app-header {

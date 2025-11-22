@@ -12,7 +12,7 @@
   display: flex;
   flex-direction: column;
   z-index: 100;
-  overflow: hidden;
+  overflow: visible;
   transition: transform 0.3s ease;
 }
 
@@ -81,6 +81,38 @@
 
 .collapse-button:active {
   transform: scale(0.95);
+}
+
+.album-library-collapse-button {
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  padding: 12px 16px;
+  color: rgba(0, 0, 0, 0.8);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 101;
+  transition: all 0.3s ease;
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 48px;
+}
+
+.album-library-collapse-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-50%) translateX(-4px);
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15);
 }
 
 .album-library-expand-tab {
@@ -180,9 +212,13 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   cursor: grab;
-  transition: all 0.2s ease;
+  transition: all 0.2s ease, opacity 0.1s ease, transform 0.1s ease;
   position: relative;
   overflow: hidden;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .album-library-item::before {
@@ -216,6 +252,21 @@
 .album-library-item:active {
   cursor: grabbing;
   transform: translateX(-2px) scale(0.98);
+}
+
+.album-library-item.dragging,
+.album-library-item.is-dragging {
+  opacity: 0.6;
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  pointer-events: none;
+  transition: none;
+}
+
+.album-library-item.dragging::before,
+.album-library-item.is-dragging::before {
+  opacity: 0;
 }
 
 .album-library-item-image {
