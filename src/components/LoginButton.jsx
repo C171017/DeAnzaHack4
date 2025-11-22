@@ -1,4 +1,5 @@
 import React from 'react';
+import spotifyLogo from '../assets/images/Spotify Icon/Spotify_icon.svg.png';
 
 /**
  * Login/Logout button component
@@ -30,16 +31,23 @@ const LoginButton = ({ isAuthenticated, user, onLogin, onLogout }) => {
     <button 
       onClick={onLogin}
       style={{
-        padding: '8px 16px',
-        backgroundColor: '#1db954',
-        color: 'white',
+        padding: '0',
+        backgroundColor: 'transparent',
         border: 'none',
-        borderRadius: '20px',
         cursor: 'pointer',
-        fontWeight: 'bold'
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
       }}
     >
-      Login with Spotify
+      <img 
+        src={spotifyLogo} 
+        alt="Spotify Logo" 
+        style={{
+          height: '48px',
+          width: 'auto'
+        }}
+      />
     </button>
   );
 };
