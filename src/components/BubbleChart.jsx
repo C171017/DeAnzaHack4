@@ -54,11 +54,26 @@ const BubbleChart = ({ data }) => {
             .attr('height', viewBoxSize)
             .attr('x', 0)
             .attr('y', 0)
-            .attr('fill', '#000000')
+            .attr('fill', '#ffffff')
             .style('pointer-events', 'none'); // Don't interfere with panning
 
+        // Create genre data objects with radius for collision detection
+        // Estimate radius based on text size (36px font, plus padding for collision)
+        const genreRadius = 80;
+        const genreData = genres.map(genre => ({
+            id: `genre-${genre}`,
+            name: genre,
+            radius: genreRadius,
+            isGenre: true, // Flag to identify genre nodes
+            x: undefined,
+            y: undefined
+        }));
+
+        // Combine album data and genre data for simulation
+        const allData = [...data, ...genreData];
+
         // Set random initial positions for each node
-        data.forEach(d => {
+        allData.forEach(d => {
             if (d.x === undefined || d.y === undefined) {
                 // Random position within viewBox (1920x1920 square), accounting for square diagonal
                 // Use diagonal distance to ensure entire square stays within bounds
@@ -70,17 +85,17 @@ const BubbleChart = ({ data }) => {
         });
 
         // Create simulation with only collision detection
-        const simulation = d3.forceSimulation(data)
+        const simulation = d3.forceSimulation(allData)
             .force('collide', d3.forceCollide().radius(d => d.radius * Math.sqrt(2) + 2).strength(0.5))
             .alphaDecay(0.02) // Slower decay for smoother, less bouncy movement
             .velocityDecay(0.4); // Higher velocity decay to reduce bounciness
 
-        // Create node groups inside the container
+        // Create node groups inside the container for all data (albums + genres)
         const nodes = container.selectAll('.node')
-            .data(data)
+            .data(allData)
             .enter()
             .append('g')
-            .attr('class', 'node')
+            .attr('class', d => d.isGenre ? 'node genre-node' : 'node')
             .style('cursor', 'grab')
             .call(d3.drag()
                 .on('start', function(event, d) {
@@ -116,10 +131,13 @@ const BubbleChart = ({ data }) => {
         // Define defs for images (outside container so patterns work correctly)
         const defs = svg.append('defs');
 
-        // Add images patterns
-        nodes.each(function (d, i) {
+        // Add images patterns only for album nodes
+        // Use a counter to ensure unique pattern IDs
+        let patternIndex = 0;
+        nodes.filter(d => !d.isGenre && d.img).each(function (d) {
+            const patternId = `image-${patternIndex}`;
             defs.append('pattern')
-                .attr('id', `image-${i}`)
+                .attr('id', patternId)
                 .attr('height', '100%')
                 .attr('width', '100%')
                 .attr('patternContentUnits', 'objectBoundingBox')
@@ -128,57 +146,54 @@ const BubbleChart = ({ data }) => {
                 .attr('width', 1)
                 .attr('preserveAspectRatio', 'xMidYMid meet')
                 .attr('href', d.img);
+            d.patternId = patternId; // Store pattern ID in data
+            patternIndex++;
         });
 
-        // Add squares (rectangles)
-        nodes.append('rect')
+        // Add squares (rectangles) for album nodes
+        const albumNodes = nodes.filter(d => !d.isGenre);
+        albumNodes.append('rect')
             .attr('width', d => d.radius * 2)
             .attr('height', d => d.radius * 2)
             .attr('x', d => -d.radius)
             .attr('y', d => -d.radius)
-            .attr('fill', (d, i) => d.img ? `url(#image-${i})` : '#333')
+            .attr('fill', (d) => {
+                if (d.img && d.patternId) {
+                    return `url(#${d.patternId})`;
+                }
+                return '#333';
+            })
             .attr('fill-opacity', 0.85) // Slight transparency for glass effect
             .attr('stroke', 'rgba(0, 0, 0, 0.1)') // Subtle dark border for white background
             .attr('stroke-width', 1)
             .style('filter', 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))'); // Soft shadow for depth
 
-        // Add genre text labels - static text spread across the SVG
-        // Position genres randomly across the SVG, similar to how album covers are spread
-        const genrePositions = genres.map(() => {
-            const padding = 150; // Padding to keep text away from edges
-            return {
-                x: Math.random() * (viewBoxSize - padding * 2) + padding,
-                y: Math.random() * (viewBoxSize - padding * 2) + padding
-            };
-        });
-
-        const genreTexts = container.selectAll('.genre-text')
-            .data(genres)
-            .enter()
-            .append('text')
+        // Add genre text labels for genre nodes
+        const genreNodes = nodes.filter(d => d.isGenre);
+        genreNodes.append('text')
             .attr('class', 'genre-text')
-            .text(d => d)
-            .attr('x', (d, i) => genrePositions[i].x)
-            .attr('y', (d, i) => genrePositions[i].y)
+            .text(d => d.name)
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'middle')
+            .attr('dy', '0.35em') // Better vertical centering
             .style('font-family', 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif')
             .style('font-size', '36px')
             .style('font-weight', '700') // Bold
-            .style('fill', '#ffffff')
+            .style('fill', '#000000') // Black text for white background
             .style('opacity', '0.85')
-            .style('pointer-events', 'none') // Don't interfere with interactions
-            .style('text-shadow', '0 2px 10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(166, 0, 255, 0.3)') // Modern shadow with accent color glow
+            .style('pointer-events', 'all') // Enable dragging
+            .style('text-shadow', '0 2px 10px rgba(0, 0, 0, 0.3), 0 0 20px rgba(166, 0, 255, 0.2)') // Modern shadow with accent color glow
             .style('letter-spacing', '2px') // Modern spacing
             .style('user-select', 'none') // Prevent text selection
-            .style('text-transform', 'uppercase'); // Modern uppercase style
+            .style('text-transform', 'uppercase') // Modern uppercase style
+            .style('cursor', 'grab'); // Show grab cursor
 
 
 
         // Simulation tick with boundary constraints
         simulation.on('tick', () => {
-            // Enforce boundaries to keep squares within viewBox (1920x1920 square)
-            data.forEach(d => {
+            // Enforce boundaries to keep all nodes within viewBox (1920x1920 square)
+            allData.forEach(d => {
                 const diagonal = d.radius * Math.sqrt(2);
                 const minX = diagonal;
                 const maxX = viewBoxSize - diagonal;
@@ -204,6 +219,7 @@ const BubbleChart = ({ data }) => {
                 }
             });
             
+            // Update positions for all nodes (albums and genres)
             nodes.attr('transform', d => `translate(${d.x},${d.y})`);
         });
 
@@ -255,12 +271,12 @@ const BubbleChart = ({ data }) => {
             .filter((event) => {
                 // Handle wheel events (mouse wheel and touchpad)
                 if (event.type === 'wheel') {
-                    // Check if clicking on a node - if so, don't zoom
+                    // Check if clicking on a node or genre text - if so, don't zoom
                     const target = event.target;
                     if (target) {
                         let element = target;
                         while (element && element !== svg.node()) {
-                            if (element.classList && element.classList.contains('node')) {
+                            if (element.classList && (element.classList.contains('node') || element.classList.contains('genre-text'))) {
                                 return false; // Don't allow zoom when hovering over node
                             }
                             element = element.parentNode;
@@ -298,14 +314,14 @@ const BubbleChart = ({ data }) => {
                     return true;
                 }
                 
-                // For mouse events, check if clicking on a node
+                // For mouse events, check if clicking on a node or genre text
                 const target = event.target;
                 if (!target) return true;
                 
-                // Check if target or its parent is a node
+                // Check if target or its parent is a node or genre text
                 let element = target;
                 while (element && element !== svg.node()) {
-                    if (element.classList && element.classList.contains('node')) {
+                    if (element.classList && (element.classList.contains('node') || element.classList.contains('genre-text'))) {
                         return false; // Don't allow pan when clicking on node
                     }
                     element = element.parentNode;
@@ -325,19 +341,19 @@ const BubbleChart = ({ data }) => {
             const target = event.target;
             if (!target) return;
             
-            // Check if hovering over a node
+            // Check if hovering over a node or genre text
             let element = target;
-            let isNode = false;
+            let isInteractive = false;
             while (element && element !== svg.node()) {
-                if (element.classList && element.classList.contains('node')) {
-                    isNode = true;
+                if (element.classList && (element.classList.contains('node') || element.classList.contains('genre-text'))) {
+                    isInteractive = true;
                     break;
                 }
                 element = element.parentNode;
             }
             
             // Update cursor based on what we're hovering over
-            if (!isNode) {
+            if (!isInteractive) {
                 svg.style('cursor', event.buttons === 1 ? 'grabbing' : 'grab');
             }
         });
