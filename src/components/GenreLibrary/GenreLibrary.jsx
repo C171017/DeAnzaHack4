@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './GenreLibrary.css';
 
 const GenreLibrary = ({ genres = [], onGenreDragStart, onGenreDrop }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const handleDragStart = (e, genre) => {
     e.dataTransfer.effectAllowed = 'move';

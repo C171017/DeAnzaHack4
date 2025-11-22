@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './AlbumLibrary.css';
 
 const AlbumLibrary = ({ albums = [], loading = false, onAlbumDragStart, onAlbumDrop }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const handleDragStart = (e, album) => {
     e.dataTransfer.effectAllowed = 'move';

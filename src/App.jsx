@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import BubbleChart from './components/BubbleChart';
 import EmptyCanvas from './components/EmptyCanvas';
 import AlbumLibrary from './components/AlbumLibrary';
@@ -7,13 +7,15 @@ import LoginButton from './components/LoginButton';
 import LoadingState from './components/LoadingState';
 import ErrorState from './components/ErrorState';
 import EmptyState from './components/EmptyState';
+import Modal from './components/Modal';
 import { useSpotifyAuth } from './hooks/useSpotifyAuth';
 import { useAlbums } from './hooks/useAlbums';
 import { getAuthorizationUrl, getStoredAccessToken } from './utils/spotifyAuth';
 import './App.css';
 
 function App() {
-  const { isAuthenticated, user, loading: authLoading, error: authError, checkAuth } = useSpotifyAuth();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { isAuthenticated, user, loading: authLoading, error: authError, checkAuth, logout } = useSpotifyAuth();
   const { 
     data, 
     albums, 
@@ -74,14 +76,47 @@ function App() {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    loadInitialAlbums();
+    setIsModalOpen(false);
+  };
+
+  const handleLogoClick = () => {
+    if (isAuthenticated) {
+      setIsModalOpen(true);
+    }
+  };
+
   const loading = authLoading || albumsLoading;
   const error = authError || albumsError;
 
   return (
     <div className="App">
       <div className="logo-container-center">
-        <h1 className="hacksify-logo">Hacksify</h1>
+        <h1 
+          className={`hacksify-logo ${isAuthenticated ? 'clickable' : ''}`}
+          onClick={handleLogoClick}
+        >
+          Hacksify
+        </h1>
       </div>
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <div className="modal-body">
+          <h2 className="modal-title">Hacksify</h2>
+          {user && (
+            <div className="modal-user-info">
+              <p className="modal-user-name">{user.display_name || user.id}</p>
+              {user.email && (
+                <p className="modal-user-email">{user.email}</p>
+              )}
+            </div>
+          )}
+          <button className="modal-logout-button" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
+      </Modal>
       {!isAuthenticated && (
         <div className="fixed-login-button">
             <LoginButton

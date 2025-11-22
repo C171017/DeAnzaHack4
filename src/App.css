@@ -17,6 +17,10 @@
     pointer-events: none;
 }
 
+.logo-container-center .hacksify-logo.clickable {
+    pointer-events: auto;
+}
+
 .hacksify-logo {
     font-size: 2rem;
     font-weight: 700;
@@ -26,6 +30,17 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
     line-height: 1;
+    transition: all 0.3s ease;
+}
+
+.hacksify-logo.clickable {
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.hacksify-logo.clickable:hover {
+    transform: scale(1.1);
+    filter: brightness(1.2);
 }
 
 
