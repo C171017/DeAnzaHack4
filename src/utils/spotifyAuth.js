@@ -13,7 +13,7 @@ const getRedirectUri = () => {
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     const port = window.location.port || '8080';
     // Use the actual hostname to match what's registered in Spotify dashboard
-    return `http://${hostname}:${port}/callback`;
+    return `http://127.0.0.1:${port}/callback`;
   }
   
   // Fallback to current origin

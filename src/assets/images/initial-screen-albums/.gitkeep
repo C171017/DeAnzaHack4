@@ -1,0 +1,3 @@
+# Album cover images for the initial screen (preset albums)
+# Naming convention: album-{id}.jpg (e.g., album-1.jpg, album-2.jpg)
+# These images correspond to the albums in src/data/albums.json

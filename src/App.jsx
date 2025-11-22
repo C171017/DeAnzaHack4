@@ -140,7 +140,6 @@ function App() {
   return (
     <div className="App">
       <header className="app-header">
-        <div className="logo">Hacksify</div>
         <div className="user-profile">
           {isAuthenticated && user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -254,33 +253,7 @@ function App() {
             )}
           </div>
         ) : !isAuthenticated ? (
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: '100%',
-            flexDirection: 'column',
-            gap: '20px',
-            color: '#000000'
-          }}>
-            <h2>Welcome to Hacksify</h2>
-            <p style={{ color: '#888' }}>Visualize your music taste with interactive bubbles</p>
-            <button 
-              onClick={handleLogin}
-              style={{
-                padding: '12px 24px',
-                backgroundColor: '#1db954',
-                color: 'white',
-                border: 'none',
-                borderRadius: '25px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                fontSize: '16px'
-              }}
-            >
-              Continue with Spotify
-            </button>
-          </div>
+          <div></div>
         ) : albums.length === 0 ? (
           <div style={{ 
             display: 'flex', 
