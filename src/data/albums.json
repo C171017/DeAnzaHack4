@@ -1,0 +1,192 @@
+[
+    {
+        "id": "1",
+        "name": "Random Access Memories",
+        "artists": [
+            {
+                "name": "Daft Punk"
+            }
+        ],
+        "images": [
+            {
+                "url": "https://upload.wikimedia.org/wikipedia/en/a/a7/Random_Access_Memories.jpg"
+            }
+        ],
+        "release_date": "2013-05-17",
+        "total_tracks": 13,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/4m2880jivSbbyEGAKfITCa"
+        }
+    },
+    {
+        "id": "2",
+        "name": "After Hours",
+        "artists": [
+            {
+                "name": "The Weeknd"
+            }
+        ],
+        "images": [
+            {
+                "url": "https://upload.wikimedia.org/wikipedia/en/c/c1/The_Weeknd_-_After_Hours.png"
+            }
+        ],
+        "release_date": "2020-03-20",
+        "total_tracks": 14,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/4yP0hdKOZPNshxUOjY0cZj"
+        }
+    },
+    {
+        "id": "3",
+        "name": "Future Nostalgia",
+        "artists": [
+            {
+                "name": "Dua Lipa"
+            }
+        ],
+        "images": [
+            {
+                "url": "https://upload.wikimedia.org/wikipedia/en/f/f5/Dua_Lipa_-_Future_Nostalgia_%28Official_Album_Cover%29.png"
+            }
+        ],
+        "release_date": "2020-03-27",
+        "total_tracks": 11,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/0JGOiO34nwfUdDrD612dOp"
+        }
+    },
+    {
+        "id": "4",
+        "name": "Currents",
+        "artists": [
+            {
+                "name": "Tame Impala"
+            }
+        ],
+        "images": [
+            {
+                "url": "https://upload.wikimedia.org/wikipedia/en/9/9b/Tame_Impala_-_Currents.png"
+            }
+        ],
+        "release_date": "2015-07-17",
+        "total_tracks": 13,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/79dL7FLiJFOO0EoehU6qgl"
+        }
+    },
+    {
+        "id": "5",
+        "name": "Melodrama",
+        "artists": [
+            {
+                "name": "Lorde"
+            }
+        ],
+        "images": [
+            {
+                "url": "https://upload.wikimedia.org/wikipedia/en/b/b2/Lorde_-_Melodrama.png"
+            }
+        ],
+        "release_date": "2017-06-16",
+        "total_tracks": 11,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/2B87zXm9bOWvAJdkJBTry1"
+        }
+    },
+    {
+        "id": "6",
+        "name": "IGOR",
+        "artists": [
+            {
+                "name": "Tyler, The Creator"
+            }
+        ],
+        "images": [
+            {
+                "url": "https://upload.wikimedia.org/wikipedia/en/5/51/Igor_-_Tyler_the_Creator.jpg"
+            }
+        ],
+        "release_date": "2019-05-17",
+        "total_tracks": 12,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/5zi7WsKlIiUXv09tbGLKsE"
+        }
+    },
+    {
+        "id": "7",
+        "name": "Blonde",
+        "artists": [
+            {
+                "name": "Frank Ocean"
+            }
+        ],
+        "images": [
+            {
+                "url": "https://upload.wikimedia.org/wikipedia/en/a/a0/Blonde_-_Frank_Ocean.jpeg"
+            }
+        ],
+        "release_date": "2016-08-20",
+        "total_tracks": 17,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/3mH6qwIy9crq0I9YQbOuDf"
+        }
+    },
+    {
+        "id": "8",
+        "name": "SOS",
+        "artists": [
+            {
+                "name": "SZA"
+            }
+        ],
+        "images": [
+            {
+                "url": "https://upload.wikimedia.org/wikipedia/en/2/2c/SZA_-_SOS.png"
+            }
+        ],
+        "release_date": "2022-12-09",
+        "total_tracks": 23,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/07w0rG5TETcyihsEIZR3qG"
+        }
+    },
+    {
+        "id": "9",
+        "name": "Midnights",
+        "artists": [
+            {
+                "name": "Taylor Swift"
+            }
+        ],
+        "images": [
+            {
+                "url": "https://upload.wikimedia.org/wikipedia/en/9/9f/Midnights_-_Taylor_Swift.png"
+            }
+        ],
+        "release_date": "2022-10-21",
+        "total_tracks": 13,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/151w1FgRZfnKZA9FEll9QQ"
+        }
+    },
+    {
+        "id": "10",
+        "name": "Un Verano Sin Ti",
+        "artists": [
+            {
+                "name": "Bad Bunny"
+            }
+        ],
+        "images": [
+            {
+                "url": "https://upload.wikimedia.org/wikipedia/en/6/60/Bad_Bunny_-_Un_Verano_Sin_Ti.png"
+            }
+        ],
+        "release_date": "2022-05-06",
+        "total_tracks": 23,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/3RQQmkQEvNCY4prGKE6OC5"
+        }
+    }
+]
