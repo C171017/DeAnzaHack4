@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
 import BubbleChart from './components/BubbleChart';
+import EmptyCanvas from './components/EmptyCanvas';
+import AlbumLibrary from './components/AlbumLibrary';
 import LoginButton from './components/LoginButton';
 import LoadingState from './components/LoadingState';
 import ErrorState from './components/ErrorState';
@@ -74,22 +76,38 @@ function App() {
         />
       </div>
       <main className="visualizer-container">
-        {loading ? (
-          <LoadingState isAuthenticated={isAuthenticated} />
-        ) : error ? (
-          <ErrorState
-            error={error}
-            isAuthenticated={isAuthenticated}
-            onRetry={handleLogin}
-          />
-        ) : !isAuthenticated ? (
-          <BubbleChart data={data} />
-        ) : albums.length === 0 ? (
-          <EmptyState />
+        {!isAuthenticated ? (
+          // Before login: show loading state or bubble chart with initial albums
+          loading ? (
+            <LoadingState isAuthenticated={isAuthenticated} />
+          ) : error ? (
+            <ErrorState
+              error={error}
+              isAuthenticated={isAuthenticated}
+              onRetry={handleLogin}
+            />
+          ) : (
+            <BubbleChart data={data} />
+          )
         ) : (
-          <BubbleChart data={data} />
+          // After login: always show empty canvas (loading happens in background)
+          error ? (
+            <ErrorState
+              error={error}
+              isAuthenticated={isAuthenticated}
+              onRetry={handleLogin}
+            />
+          ) : (
+            <EmptyCanvas />
+          )
         )}
       </main>
+      {isAuthenticated && (
+        <AlbumLibrary 
+          albums={data} 
+          loading={albumsLoading}
+        />
+      )}
     </div>
   );
 }

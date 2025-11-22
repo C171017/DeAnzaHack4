@@ -1,7 +1,7 @@
 import React from 'react';
 import './AlbumLibrary.css';
 
-const AlbumLibrary = ({ albums, onAlbumDragStart, onAlbumDrop }) => {
+const AlbumLibrary = ({ albums = [], loading = false, onAlbumDragStart, onAlbumDrop }) => {
   const handleDragStart = (e, album) => {
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('application/json', JSON.stringify(album));
@@ -35,12 +35,18 @@ const AlbumLibrary = ({ albums, onAlbumDragStart, onAlbumDrop }) => {
     >
       <div className="album-library-header">
         <h2>Your Albums</h2>
-        <span className="album-count">{albums.length}</span>
+        <span className="album-count">
+          {loading ? '...' : albums.length}
+        </span>
       </div>
       <div className="album-library-content">
-        {albums.length === 0 ? (
+        {loading && albums.length === 0 ? (
           <div className="album-library-empty">
-            <p>No albums in library</p>
+            <p>Loading albums...</p>
+          </div>
+        ) : albums.length === 0 ? (
+          <div className="album-library-empty">
+            <p>No albums loaded yet</p>
           </div>
         ) : (
           albums.map((album) => (
