@@ -231,12 +231,67 @@ const BubbleChart = ({ data }) => {
             d.fy = null;
         }
 
+        // Calculate panning boundaries relative to viewport
+        // Margin is the distance between SVG boundary and viewport boundary (same for left and top)
+        const viewportMargin = 100; // pixels - consistent margin from viewport edges
+        
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        
+        // Translation is in SVG coordinate space (same as viewBox: 0 to 1920)
+        // The SVG element is positioned at (svgLeft, svgTop) in viewport coordinates
+        // The viewBox shows the container content, which we translate
+        
+        // Calculate how much the SVG extends beyond viewport when centered
+        // SVG left edge is at svgLeft (negative if extends left of viewport)
+        // SVG right edge is at svgLeft + svgSize
+        const svgLeftEdge = svgLeft;
+        const svgRightEdge = svgLeft + svgSize;
+        const svgTopEdge = svgTop;
+        const svgBottomEdge = svgTop + svgSize;
+        
+        // Calculate how much we can translate while maintaining margin
+        // When translating right (positive X): container moves right, showing more left content
+        // We can translate until the left edge of visible content is viewportMargin from viewport left
+        // The viewBox maps viewBoxSize (1920) to svgSize pixels on screen
+        const scaleFactor = svgSize / viewBoxSize; // pixels per viewBox unit
+        
+        // Maximum translation right/down: allow until content edge reaches viewportMargin from viewport edge
+        // If SVG left edge is at position X, and we want viewportMargin margin:
+        // We can translate by: (svgLeftEdge + viewportMargin) / scaleFactor
+        const maxTranslateX = Math.max(0, (Math.max(0, -svgLeftEdge) + viewportMargin) / scaleFactor);
+        const maxTranslateY = Math.max(0, (Math.max(0, -svgTopEdge) + viewportMargin) / scaleFactor);
+        
+        // Maximum translation left/up: allow until content edge reaches viewportMargin from viewport edge
+        // If SVG right edge extends beyond viewport, we can translate left by that amount plus margin
+        const svgExtendsRight = Math.max(0, svgRightEdge - viewportWidth);
+        const svgExtendsBottom = Math.max(0, svgBottomEdge - viewportHeight);
+        const minTranslateX = -Math.max(0, (svgExtendsRight + viewportMargin) / scaleFactor);
+        const minTranslateY = -Math.max(0, (svgExtendsBottom + viewportMargin) / scaleFactor);
+
         // Set up zoom behavior for panning only (no zoom)
+        let isUpdatingTransform = false; // Flag to prevent recursive updates
         const zoom = d3.zoom()
             .scaleExtent([1, 1]) // Lock scale at 1 (no zooming)
             .on('zoom', (event) => {
+                if (isUpdatingTransform) return; // Prevent recursive calls
+                
+                // Clamp translation values to boundaries to prevent panning too far
+                const clampedX = Math.max(minTranslateX, Math.min(maxTranslateX, event.transform.x));
+                const clampedY = Math.max(minTranslateY, Math.min(maxTranslateY, event.transform.y));
+                
                 // Only apply translation, ignore scale
-                container.attr('transform', `translate(${event.transform.x},${event.transform.y})`);
+                container.attr('transform', `translate(${clampedX},${clampedY})`);
+                
+                // If we clamped, update the zoom transform to prevent sticky behavior
+                if (clampedX !== event.transform.x || clampedY !== event.transform.y) {
+                    isUpdatingTransform = true;
+                    // Use setTimeout to update transform after current event completes
+                    setTimeout(() => {
+                        svg.call(zoom.transform, d3.zoomIdentity.translate(clampedX, clampedY));
+                        isUpdatingTransform = false;
+                    }, 0);
+                }
             })
             .filter((event) => {
                 // Disable mouse wheel zooming
@@ -261,6 +316,8 @@ const BubbleChart = ({ data }) => {
             });
 
         // Apply zoom behavior to SVG
+        // Initialize container transform to (0, 0) explicitly
+        container.attr('transform', 'translate(0, 0)');
         svg.call(zoom)
             .on('dblclick.zoom', null); // Disable double-click zoom
 
