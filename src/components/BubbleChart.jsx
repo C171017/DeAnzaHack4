@@ -74,27 +74,34 @@ const BubbleChart = ({ data }) => {
             .style('pointer-events', 'none'); // Don't interfere with panning
 
         // Create genre data objects with radius for collision detection
-        // Estimate radius based on text size (36px font, plus padding for collision)
-        const genreRadius = 80;
+        // Collision based on actual text size (36px font) with small padding
+        const genreTextFontSize = 36;
+        const genreCollisionPadding = 8; // Small border around text
+        const genreCollisionRadius = (genreTextFontSize / 2) + genreCollisionPadding; // ~26px
+        const genreCircleRadius = 80; // Visual circle size (for rendering, not collision)
         const genreData = genres.map(genre => ({
             id: `genre-${genre}`,
             name: genre,
-            radius: genreRadius,
+            radius: genreCollisionRadius, // Collision radius based on text size only
+            circleRadius: genreCircleRadius, // Visual circle size
             isGenre: true, // Flag to identify genre nodes
             x: undefined,
             y: undefined
         }));
 
-        // Combine album data and genre data for simulation
-        const allData = [...data, ...genreData];
+        // Combine genre data and album data for simulation
+        // Genres first so their circles render first, then albums render on top
+        const allData = [...genreData, ...data];
+
+        // Collision padding for albums (small border around covers)
+        const albumCollisionPadding = 6;
 
         // Set random initial positions for each node
         allData.forEach(d => {
             if (d.x === undefined || d.y === undefined) {
                 // Random position within viewBox (1920x1920 square)
-                // For genre nodes: use text radius only (circular)
-                // For album nodes: use diagonal radius (square)
-                const boundaryRadius = d.isGenre ? d.radius : d.radius * Math.sqrt(2);
+                // Use collision radius for boundary (small for both genres and albums)
+                const boundaryRadius = d.isGenre ? d.radius : (d.radius + albumCollisionPadding);
                 const padding = boundaryRadius;
                 d.x = Math.random() * (viewBoxSize - padding * 2) + padding;
                 d.y = Math.random() * (viewBoxSize - padding * 2) + padding;
@@ -102,16 +109,17 @@ const BubbleChart = ({ data }) => {
         });
 
         // Create simulation with only collision detection
-        // For genre nodes: use text radius only (circular collision)
-        // For album nodes: use diagonal radius (square collision)
+        // For genre nodes: use small collision radius based on text size only
+        // For album nodes: use size with small padding (not diagonal)
         const simulation = d3.forceSimulation(allData)
             .force('collide', d3.forceCollide().radius(d => {
                 if (d.isGenre) {
-                    // Genre nodes: collision based on text size only (circular)
-                    return d.radius + 2;
+                    // Genre nodes: collision based on text size only (small, just slightly bigger than text)
+                    return d.radius; // Already includes padding
                 } else {
-                    // Album nodes: collision based on square diagonal
-                    return d.radius * Math.sqrt(2) + 2;
+                    // Album nodes: collision based on actual size with small padding
+                    // Album size is d.radius * 2 (width/height), so collision radius is d.radius + padding
+                    return d.radius + albumCollisionPadding;
                 }
             }).strength(0.5))
             .alphaDecay(0.02) // Slower decay for smoother, less bouncy movement
@@ -238,15 +246,18 @@ const BubbleChart = ({ data }) => {
         // Use multiply blend mode so overlapping colors mix naturally like paint
         genreNodes.append('circle')
             .attr('class', 'genre-circle')
-            .attr('r', d => genreRadius * 1.8) // 3 times larger than before (was 0.6, now 1.8)
+            .attr('r', d => d.circleRadius * 1.8) // Visual circle size (large, for color blending)
             .attr('cx', 0)
             .attr('cy', 0)
             .attr('fill', d => d.gradientId ? `url(#${d.gradientId})` : '#CCCCCC') // Use gradient or default gray
             .style('pointer-events', 'none') // Don't interfere with dragging
             .style('mix-blend-mode', 'multiply'); // Natural color mixing when circles overlap
 
-        // Add squares (rectangles) for album nodes (after genre circles, so albums render above circles)
+        // Get album nodes for later rendering
         const albumNodes = nodes.filter(d => !d.isGenre);
+        
+        // Add squares (rectangles) for album nodes AFTER circles
+        // This ensures albums render on top of color circles
         albumNodes.append('rect')
             .attr('width', d => d.radius * 2)
             .attr('height', d => d.radius * 2)
@@ -288,9 +299,8 @@ const BubbleChart = ({ data }) => {
         simulation.on('tick', () => {
             // Enforce boundaries to keep all nodes within viewBox (1920x1920 square)
             allData.forEach(d => {
-                // For genre nodes: use text radius only (circular)
-                // For album nodes: use diagonal radius (square)
-                const boundaryRadius = d.isGenre ? d.radius : d.radius * Math.sqrt(2);
+                // Use collision radius for boundaries (small for both genres and albums)
+                const boundaryRadius = d.isGenre ? d.radius : (d.radius + albumCollisionPadding);
                 const minX = boundaryRadius;
                 const maxX = viewBoxSize - boundaryRadius;
                 const minY = boundaryRadius;
@@ -329,9 +339,8 @@ const BubbleChart = ({ data }) => {
 
         function dragged(event, d) {
             // Constrain dragging within viewBox (1920x1920 square)
-            // For genre nodes: use text radius only (circular)
-            // For album nodes: use diagonal radius (square)
-            const boundaryRadius = d.isGenre ? d.radius : d.radius * Math.sqrt(2);
+            // Use collision radius for boundaries (small for both genres and albums)
+            const boundaryRadius = d.isGenre ? d.radius : (d.radius + albumCollisionPadding);
             const minX = boundaryRadius;
             const maxX = viewBoxSize - boundaryRadius;
             const minY = boundaryRadius;
