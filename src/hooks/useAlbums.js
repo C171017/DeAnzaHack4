@@ -74,6 +74,46 @@ const createInitialGenres = () => {
 };
 
 /**
+ * Deduplicate albums by ID, keeping the last occurrence of each unique ID
+ * This ensures no duplicate keys in React lists
+ */
+const deduplicateAlbumsById = (albums) => {
+  const seen = new Map();
+  const result = [];
+  
+  // Process in reverse to keep the last occurrence of each ID
+  for (let i = albums.length - 1; i >= 0; i--) {
+    const album = albums[i];
+    if (!seen.has(album.id)) {
+      seen.set(album.id, true);
+      result.unshift(album);
+    }
+  }
+  
+  return result;
+};
+
+/**
+ * Add new albums to existing albums array with deduplication
+ * Filters out albums that already exist by ID, then combines and deduplicates
+ * @param {Array} prevAlbums - Existing albums array
+ * @param {Array} newAlbums - New albums to add
+ * @returns {Array} Deduplicated combined array
+ */
+const addAlbumsWithDeduplication = (prevAlbums, newAlbums) => {
+  const existingIds = new Set(prevAlbums.map(a => a.id));
+  const filteredNewAlbums = newAlbums.filter(a => !existingIds.has(a.id));
+  
+  if (filteredNewAlbums.length === 0) {
+    return prevAlbums; // No new albums to add
+  }
+  
+  const combined = [...prevAlbums, ...filteredNewAlbums];
+  // Final deduplication pass to ensure no duplicates (safety net)
+  return deduplicateAlbumsById(combined);
+};
+
+/**
  * Custom hook for managing albums data
  */
 export const useAlbums = () => {
@@ -105,8 +145,12 @@ export const useAlbums = () => {
 
   // Move album from library to canvas
   const moveAlbumToCanvas = (album) => {
-    // Remove from library
-    setLibraryAlbums(prev => prev.filter(a => a.id !== album.id));
+    // Remove from library (only if it exists - safety check)
+    setLibraryAlbums(prev => {
+      const filtered = prev.filter(a => a.id !== album.id);
+      // Only update if there was actually a change to prevent unnecessary re-renders
+      return filtered.length !== prev.length ? filtered : prev;
+    });
     
     setCanvasAlbums(prev => {
       // Check if album already exists on canvas
@@ -137,11 +181,10 @@ export const useAlbums = () => {
   const moveAlbumToLibrary = (album) => {
     setCanvasAlbums(prev => prev.filter(a => a.id !== album.id));
     setLibraryAlbums(prev => {
-      // Check if album already exists in library
-      if (prev.find(a => a.id === album.id)) {
-        return prev;
-      }
-      return [...prev, album];
+      // Remove any existing album with the same ID first, then add the new one
+      // This ensures no duplicates even with async state updates
+      const filtered = prev.filter(a => a.id !== album.id);
+      return [...filtered, album];
     });
   };
 
@@ -232,9 +275,9 @@ export const useAlbums = () => {
             };
           });
           
-          // Incrementally add to library (not canvas)
-          setLibraryAlbums(prev => [...prev, ...transformedBatch]);
-          setData(prevData => [...prevData, ...transformedBatch]);
+          // Incrementally add to library (not canvas) with deduplication
+          setLibraryAlbums(prev => addAlbumsWithDeduplication(prev, transformedBatch));
+          setData(prevData => addAlbumsWithDeduplication(prevData, transformedBatch));
           displayedCount += albumsToDisplay.length;
           
           console.log(`Loaded and displayed ${displayedCount} albums...`);

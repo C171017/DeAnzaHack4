@@ -176,7 +176,9 @@ function App() {
           <AlbumLibrary 
             albums={libraryAlbums} 
             loading={albumsLoading}
-            onAlbumDragStart={moveAlbumToCanvas}
+            onAlbumDragStart={(album) => {
+              // Visual feedback only, actual move happens on drop
+            }}
             onAlbumDrop={moveAlbumToLibrary}
           />
         </>

@@ -160,6 +160,8 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
                 x: clampedX,
                 y: clampedY
               };
+
+              console.log("itemWithPosition", itemWithPosition);
               
               // Call appropriate handler based on item type
               // For genres: only move on drop (not on drag start)

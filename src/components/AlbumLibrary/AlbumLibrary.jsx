@@ -7,10 +7,7 @@ const AlbumLibrary = ({ albums = [], loading = false, onAlbumDragStart, onAlbumD
   const handleDragStart = (e, album) => {
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('application/json', JSON.stringify(album));
-    // Mark album as being dragged (visual feedback only)
-    if (onAlbumDragStart) {
-      onAlbumDragStart(album);
-    }
+    // Don't move immediately - only move on drop
   };
 
   const handleDragOver = (e) => {
