@@ -207,5 +207,290 @@
         "external_urls": {
             "spotify": "https://open.spotify.com/album/6lBN3Tzt61u8i9A1wgkzKh"
         }
+    },
+    {
+        "id": "initial-12",
+        "name": "Loveless",
+        "artists": [
+            {
+                "name": "My Bloody Valentine"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-12.jpg"
+            }
+        ],
+        "release_date": "1991-11-04",
+        "total_tracks": 11,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/3GH4IiI6jQAIvnHVdb5FB6"
+        }
+    },
+    {
+        "id": "initial-13",
+        "name": "Horses",
+        "artists": [
+            {
+                "name": "Patti Smith"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-13.jpg"
+            }
+        ],
+        "release_date": "1975-11-10",
+        "total_tracks": 8,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/5vxNA2I8dcS8bLoIkugLsB"
+        }
+    },
+    {
+        "id": "initial-14",
+        "name": "London Calling",
+        "artists": [
+            {
+                "name": "The Clash"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-14.jpg"
+            }
+        ],
+        "release_date": "1979-12-14",
+        "total_tracks": 19,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/6FCzvataOZh68j8OKzOt9a"
+        }
+    },
+    {
+        "id": "initial-15",
+        "name": "Born to Run",
+        "artists": [
+            {
+                "name": "Bruce Springsteen"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-15.jpg"
+            }
+        ],
+        "release_date": "1975-08-25",
+        "total_tracks": 8,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/4YhEjYwqJqpb2zqfXFEUlb"
+        }
+    },
+    {
+        "id": "initial-16",
+        "name": "Sgt. Pepper's Lonely Hearts Club Band",
+        "artists": [
+            {
+                "name": "The Beatles"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-16.jpg"
+            }
+        ],
+        "release_date": "1967-05-26",
+        "total_tracks": 13,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/6QaVfG1pHYl1z15ZxkvVDW"
+        }
+    },
+    {
+        "id": "initial-17",
+        "name": "Aladdin Sane",
+        "artists": [
+            {
+                "name": "David Bowie"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-17.jpg"
+            }
+        ],
+        "release_date": "1973-04-13",
+        "total_tracks": 10,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/3XMzQpPLMkO4WkFh7AydoJ"
+        }
+    },
+    {
+        "id": "initial-18",
+        "name": "Purple Rain",
+        "artists": [
+            {
+                "name": "Prince & The Revolution"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-18.jpg"
+            }
+        ],
+        "release_date": "1984-09-26",
+        "total_tracks": 9,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/7nXJ5k4XgRj5OLg9m8V3zc"
+        }
+    },
+    {
+        "id": "initial-19",
+        "name": "Automatic for the People",
+        "artists": [
+            {
+                "name": "R.E.M."
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-19.jpg"
+            }
+        ],
+        "release_date": "1992-10-05",
+        "total_tracks": 12,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/0BiNb8HYR4JvuxUa31Z58Q"
+        }
+    },
+    {
+        "id": "initial-20",
+        "name": "Rust in Peace",
+        "artists": [
+            {
+                "name": "Megadeth"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-20.jpg"
+            }
+        ],
+        "release_date": "1990-09-24",
+        "total_tracks": 10,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/5KS3OHMy8AleH0x4UTi6HE"
+        }
+    },
+    {
+        "id": "initial-21",
+        "name": "Enter the Wu-Tang (36 Chambers)",
+        "artists": [
+            {
+                "name": "Wu-Tang Clan"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-21.jpg"
+            }
+        ],
+        "release_date": "1993-11-09",
+        "total_tracks": 12,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/4tC4W6A0p1w3d3Xew8A5Sl"
+        }
+    },
+    {
+        "id": "initial-22",
+        "name": "The Miseducation of Lauryn Hill",
+        "artists": [
+            {
+                "name": "Lauryn Hill"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-22.jpg"
+            }
+        ],
+        "release_date": "1998-08-25",
+        "total_tracks": 16,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/1BZoqf8Zje5nGdwZhOjAtD"
+        }
+    },
+    {
+        "id": "initial-23",
+        "name": "Blonde",
+        "artists": [
+            {
+                "name": "Frank Ocean"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-23.jpg"
+            }
+        ],
+        "release_date": "2016-08-20",
+        "total_tracks": 17,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/3mH6qwIy9crq0I9YQbOuDf"
+        }
+    },
+    {
+        "id": "initial-24",
+        "name": "IGOR",
+        "artists": [
+            {
+                "name": "Tyler, The Creator"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-24.jpg"
+            }
+        ],
+        "release_date": "2019-05-17",
+        "total_tracks": 12,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/5zi7WsKlIiUXv09tbGLKsE"
+        }
+    },
+    {
+        "id": "initial-25",
+        "name": "A Fever You Can't Sweat Out",
+        "artists": [
+            {
+                "name": "Panic! At The Disco"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-25.jpg"
+            }
+        ],
+        "release_date": "2005-09-27",
+        "total_tracks": 13,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/2YeOh2Jq6ih3Vqu8lHCz3A"
+        }
+    },
+    {
+        "id": "initial-26",
+        "name": "Layla and Other Assorted Love Songs",
+        "artists": [
+            {
+                "name": "Derek and the Dominos"
+            }
+        ],
+        "images": [
+            {
+                "url": "/src/assets/images/initial-screen-albums/album-26.jpg"
+            }
+        ],
+        "release_date": "1970-11-09",
+        "total_tracks": 14,
+        "external_urls": {
+            "spotify": "https://open.spotify.com/album/5iIWnMgvSM8uEBwXKsPcXM"
+        }
     }
 ]

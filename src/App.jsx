@@ -17,6 +17,21 @@ import album8 from './assets/images/initial-screen-albums/album-8.jpg';
 import album9 from './assets/images/initial-screen-albums/album-9.jpg';
 import album10 from './assets/images/initial-screen-albums/album-10.jpg';
 import album11 from './assets/images/initial-screen-albums/album-11.jpg';
+import album12 from './assets/images/initial-screen-albums/album-12.jpg';
+import album13 from './assets/images/initial-screen-albums/album-13.jpg';
+import album14 from './assets/images/initial-screen-albums/album-14.jpg';
+import album15 from './assets/images/initial-screen-albums/album-15.jpg';
+import album16 from './assets/images/initial-screen-albums/album-16.jpg';
+import album17 from './assets/images/initial-screen-albums/album-17.jpg';
+import album18 from './assets/images/initial-screen-albums/album-18.jpg';
+import album19 from './assets/images/initial-screen-albums/album-19.jpg';
+import album20 from './assets/images/initial-screen-albums/album-20.jpg';
+import album21 from './assets/images/initial-screen-albums/album-21.jpg';
+import album22 from './assets/images/initial-screen-albums/album-22.jpg';
+import album23 from './assets/images/initial-screen-albums/album-23.jpg';
+import album24 from './assets/images/initial-screen-albums/album-24.jpg';
+import album25 from './assets/images/initial-screen-albums/album-25.jpg';
+import album26 from './assets/images/initial-screen-albums/album-26.jpg';
 
 function App() {
   const navigate = useNavigate();
@@ -31,13 +46,16 @@ function App() {
   const loadInitialAlbums = () => {
     const initialAlbums = [
       album1, album2, album3, album4, album5, album6, 
-      album7, album8, album9, album10, album11
+      album7, album8, album9, album10, album11,
+      album12, album13, album14, album15, album16,
+      album17, album18, album19, album20, album21,
+      album22, album23, album24, album25, album26
     ];
 
     const initialData = initialAlbums.map((img, index) => ({
       id: `initial-${index + 1}`,
       name: `Album ${index + 1}`,
-      radius: 70,
+      radius: 50,
       group: 'Initial Albums',
       img: img,
       artist: 'Various Artists',
