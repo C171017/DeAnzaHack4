@@ -13,6 +13,22 @@ const BubbleChart = ({ data }) => {
         'Soul', 'Punk', 'Alternative', 'Indie', 'Pop', 'R&B'
     ];
 
+    // Color mapping for each genre
+    const genreColors = {
+        'Rock': '#FF6B6B',
+        'Funk': '#4ECDC4',
+        'Hip Hop': '#FFE66D',
+        'Electronic': '#A8E6CF',
+        'Jazz': '#FF8B94',
+        'Blues': '#95E1D3',
+        'Soul': '#F38181',
+        'Punk': '#AA96DA',
+        'Alternative': '#FCBAD3',
+        'Indie': '#FFD93D',
+        'Pop': '#6BCB77',
+        'R&B': '#FFD700'
+    };
+
     useEffect(() => {
         if (!data || data.length === 0) return;
 
@@ -75,18 +91,29 @@ const BubbleChart = ({ data }) => {
         // Set random initial positions for each node
         allData.forEach(d => {
             if (d.x === undefined || d.y === undefined) {
-                // Random position within viewBox (1920x1920 square), accounting for square diagonal
-                // Use diagonal distance to ensure entire square stays within bounds
-                const diagonal = d.radius * Math.sqrt(2);
-                const padding = diagonal;
+                // Random position within viewBox (1920x1920 square)
+                // For genre nodes: use text radius only (circular)
+                // For album nodes: use diagonal radius (square)
+                const boundaryRadius = d.isGenre ? d.radius : d.radius * Math.sqrt(2);
+                const padding = boundaryRadius;
                 d.x = Math.random() * (viewBoxSize - padding * 2) + padding;
                 d.y = Math.random() * (viewBoxSize - padding * 2) + padding;
             }
         });
 
         // Create simulation with only collision detection
+        // For genre nodes: use text radius only (circular collision)
+        // For album nodes: use diagonal radius (square collision)
         const simulation = d3.forceSimulation(allData)
-            .force('collide', d3.forceCollide().radius(d => d.radius * Math.sqrt(2) + 2).strength(0.5))
+            .force('collide', d3.forceCollide().radius(d => {
+                if (d.isGenre) {
+                    // Genre nodes: collision based on text size only (circular)
+                    return d.radius + 2;
+                } else {
+                    // Album nodes: collision based on square diagonal
+                    return d.radius * Math.sqrt(2) + 2;
+                }
+            }).strength(0.5))
             .alphaDecay(0.02) // Slower decay for smoother, less bouncy movement
             .velocityDecay(0.4); // Higher velocity decay to reduce bounciness
 
@@ -150,7 +177,75 @@ const BubbleChart = ({ data }) => {
             patternIndex++;
         });
 
-        // Add squares (rectangles) for album nodes
+        // Create radial gradients for genre circles (smooth natural fade from center color to white at edge)
+        const genreNodes = nodes.filter(d => d.isGenre);
+        genreNodes.each(function(d) {
+            const genreColor = genreColors[d.name] || '#CCCCCC';
+            const gradientId = `genre-gradient-${d.name.replace(/\s+/g, '-')}`;
+            
+            // Helper function to blend color with white
+            const blendWithWhite = (color, ratio) => {
+                // Parse hex color
+                const hex = color.replace('#', '');
+                const r = parseInt(hex.substring(0, 2), 16);
+                const g = parseInt(hex.substring(2, 4), 16);
+                const b = parseInt(hex.substring(4, 6), 16);
+                
+                // Blend with white (255, 255, 255)
+                // ratio 0 = full color, ratio 1 = full white
+                const blendedR = Math.round(r + (255 - r) * ratio);
+                const blendedG = Math.round(g + (255 - g) * ratio);
+                const blendedB = Math.round(b + (255 - b) * ratio);
+                
+                return `rgb(${blendedR}, ${blendedG}, ${blendedB})`;
+            };
+            
+            const gradient = defs.append('radialGradient')
+                .attr('id', gradientId)
+                .attr('cx', '50%')
+                .attr('cy', '50%')
+                .attr('r', '50%');
+            
+            // Center: full genre color (heavy at center)
+            gradient.append('stop')
+                .attr('offset', '0%')
+                .attr('stop-color', genreColor);
+            
+            // Smooth transition - blend color with white using color interpolation
+            gradient.append('stop')
+                .attr('offset', '40%')
+                .attr('stop-color', blendWithWhite(genreColor, 0.3));
+            
+            // More blended - lighter color
+            gradient.append('stop')
+                .attr('offset', '65%')
+                .attr('stop-color', blendWithWhite(genreColor, 0.6));
+            
+            // Near edge - mostly white with slight tint
+            gradient.append('stop')
+                .attr('offset', '85%')
+                .attr('stop-color', blendWithWhite(genreColor, 0.85));
+            
+            // Edge: pure white (complete fade)
+            gradient.append('stop')
+                .attr('offset', '100%')
+                .attr('stop-color', '#FFFFFF');
+            
+            d.gradientId = gradientId; // Store gradient ID in data
+        });
+
+        // Add color circles for genre nodes first (so they render above background but below albums and text)
+        // Use multiply blend mode so overlapping colors mix naturally like paint
+        genreNodes.append('circle')
+            .attr('class', 'genre-circle')
+            .attr('r', d => genreRadius * 1.8) // 3 times larger than before (was 0.6, now 1.8)
+            .attr('cx', 0)
+            .attr('cy', 0)
+            .attr('fill', d => d.gradientId ? `url(#${d.gradientId})` : '#CCCCCC') // Use gradient or default gray
+            .style('pointer-events', 'none') // Don't interfere with dragging
+            .style('mix-blend-mode', 'multiply'); // Natural color mixing when circles overlap
+
+        // Add squares (rectangles) for album nodes (after genre circles, so albums render above circles)
         const albumNodes = nodes.filter(d => !d.isGenre);
         albumNodes.append('rect')
             .attr('width', d => d.radius * 2)
@@ -168,8 +263,7 @@ const BubbleChart = ({ data }) => {
             .attr('stroke-width', 1)
             .style('filter', 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))'); // Soft shadow for depth
 
-        // Add genre text labels for genre nodes
-        const genreNodes = nodes.filter(d => d.isGenre);
+        // Add genre text labels on top of circles (after albums, so text renders above both)
         genreNodes.append('text')
             .attr('class', 'genre-text')
             .text(d => d.name)
@@ -194,11 +288,13 @@ const BubbleChart = ({ data }) => {
         simulation.on('tick', () => {
             // Enforce boundaries to keep all nodes within viewBox (1920x1920 square)
             allData.forEach(d => {
-                const diagonal = d.radius * Math.sqrt(2);
-                const minX = diagonal;
-                const maxX = viewBoxSize - diagonal;
-                const minY = diagonal;
-                const maxY = viewBoxSize - diagonal;
+                // For genre nodes: use text radius only (circular)
+                // For album nodes: use diagonal radius (square)
+                const boundaryRadius = d.isGenre ? d.radius : d.radius * Math.sqrt(2);
+                const minX = boundaryRadius;
+                const maxX = viewBoxSize - boundaryRadius;
+                const minY = boundaryRadius;
+                const maxY = viewBoxSize - boundaryRadius;
                 
                 // Constrain x position
                 if (d.x < minX) {
@@ -233,11 +329,13 @@ const BubbleChart = ({ data }) => {
 
         function dragged(event, d) {
             // Constrain dragging within viewBox (1920x1920 square)
-            const diagonal = d.radius * Math.sqrt(2);
-            const minX = diagonal;
-            const maxX = viewBoxSize - diagonal;
-            const minY = diagonal;
-            const maxY = viewBoxSize - diagonal;
+            // For genre nodes: use text radius only (circular)
+            // For album nodes: use diagonal radius (square)
+            const boundaryRadius = d.isGenre ? d.radius : d.radius * Math.sqrt(2);
+            const minX = boundaryRadius;
+            const maxX = viewBoxSize - boundaryRadius;
+            const minY = boundaryRadius;
+            const maxY = viewBoxSize - boundaryRadius;
             
             // Update dragged node position - other nodes will collide in real-time
             d.fx = Math.max(minX, Math.min(maxX, event.x));
