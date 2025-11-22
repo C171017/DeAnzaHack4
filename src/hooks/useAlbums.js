@@ -182,6 +182,8 @@ export const useAlbums = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const isRestoringRef = useRef(false);
+  const canvasAlbumsRef = useRef([]);
+  const canvasGenresRef = useRef([]);
 
   // Initialize genres in library on mount
   useEffect(() => {
@@ -189,15 +191,28 @@ export const useAlbums = () => {
     setLibraryGenres(initialGenres);
   }, []);
 
-  // Save canvas state to localStorage whenever it changes (but not during restoration)
+  // Keep refs in sync with state
   useEffect(() => {
+    canvasAlbumsRef.current = canvasAlbums;
+  }, [canvasAlbums]);
+  
+  useEffect(() => {
+    canvasGenresRef.current = canvasGenres;
+  }, [canvasGenres]);
+
+  // Helper function to save canvas state (only called on user interactions)
+  const saveCanvasStateOnInteraction = () => {
     if (!isRestoringRef.current) {
-      // Only save if there's actually something to save (avoid overwriting with empty arrays on initial mount)
-      if (canvasAlbums.length > 0 || canvasGenres.length > 0) {
-        saveCanvasState(canvasAlbums, canvasGenres);
-      }
+      // Use setTimeout to ensure state has updated, then read from refs
+      setTimeout(() => {
+        const currentAlbums = canvasAlbumsRef.current;
+        const currentGenres = canvasGenresRef.current;
+        if (currentAlbums.length > 0 || currentGenres.length > 0) {
+          saveCanvasState(currentAlbums, currentGenres);
+        }
+      }, 0);
     }
-  }, [canvasAlbums, canvasGenres]);
+  };
 
   // Restore canvas state from localStorage
   const restoreCanvasState = (availableAlbums, availableGenres) => {
@@ -308,6 +323,9 @@ export const useAlbums = () => {
       };
       return [...prev, albumWithPosition];
     });
+    
+    // Save after user interaction
+    saveCanvasStateOnInteraction();
   };
 
   // Move album from canvas to library
@@ -319,6 +337,9 @@ export const useAlbums = () => {
       const filtered = prev.filter(a => a.id !== album.id);
       return [...filtered, album];
     });
+    
+    // Save after user interaction
+    saveCanvasStateOnInteraction();
   };
 
   // Move genre from library to canvas
@@ -349,6 +370,9 @@ export const useAlbums = () => {
       };
       return [...prev, genreWithPosition];
     });
+    
+    // Save after user interaction
+    saveCanvasStateOnInteraction();
   };
 
   // Move genre from canvas to library
@@ -361,6 +385,9 @@ export const useAlbums = () => {
       }
       return [...prev, genre];
     });
+    
+    // Save after user interaction
+    saveCanvasStateOnInteraction();
   };
 
   // Update position of existing canvas item (for drag updates)
@@ -394,6 +421,9 @@ export const useAlbums = () => {
         return prev;
       });
     }
+    
+    // Save after user interaction (dragging on canvas)
+    saveCanvasStateOnInteraction();
   };
 
   const loadSavedAlbums = async (token) => {
@@ -437,9 +467,9 @@ export const useAlbums = () => {
       if (savedState?.canvasAlbums && savedState.canvasAlbums.length > 0) {
         const placeholderAlbums = savedState.canvasAlbums.map(savedAlbum => ({
           id: savedAlbum.id,
-          name: savedAlbum.name || 'Loading...',
+          name: 'Loading album',
           artist: savedAlbum.artist || 'Unknown Artist',
-          img: savedAlbum.img || 'https://via.placeholder.com/140?text=Loading',
+          img: null, // No image for placeholder
           radius: savedAlbum.radius || 70,
           group: savedAlbum.group || 'Unknown Artist',
           releaseDate: savedAlbum.releaseDate,
