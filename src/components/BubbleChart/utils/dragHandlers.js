@@ -1,3 +1,4 @@
+import * as d3 from 'd3';
 import { VIEWBOX_SIZE, ALBUM_COLLISION_PADDING } from '../constants';
 
 /**
@@ -8,11 +9,16 @@ export const createDragHandlers = (simulation, albumCollisionPadding) => {
     if (event.sourceEvent) {
       event.sourceEvent.stopPropagation();
     }
+    
     // Zero out velocity to prevent momentum from causing jumps
     d.vx = 0;
     d.vy = 0;
     d.fx = d.x;
     d.fy = d.y;
+    
+    // Mark node as being dragged to exclude from collision forces
+    d._isDragging = true;
+    
     // Boost alpha and set target to keep simulation active during drag
     simulation.alpha(1).alphaTarget(0.3).restart();
   };
@@ -22,7 +28,9 @@ export const createDragHandlers = (simulation, albumCollisionPadding) => {
       event.sourceEvent.stopPropagation();
     }
     
-    const boundaryRadius = d.isGenre ? d.radius : (d.radius + albumCollisionPadding);
+    // Use original radius for boundary calculations (not collision radius)
+    const originalRadius = d.isGenre ? d.radius : d.radius;
+    const boundaryRadius = d.isGenre ? originalRadius : (originalRadius + albumCollisionPadding);
     const minX = boundaryRadius;
     const maxX = VIEWBOX_SIZE - boundaryRadius;
     const minY = boundaryRadius;
@@ -49,8 +57,13 @@ export const createDragHandlers = (simulation, albumCollisionPadding) => {
     if (event.sourceEvent) {
       event.sourceEvent.stopPropagation();
     }
+    
+    // Remove drag flag
+    d._isDragging = false;
+    
     d.fx = null;
     d.fy = null;
+    
     // Reset alpha target to allow natural decay
     simulation.alphaTarget(0);
   };

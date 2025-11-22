@@ -39,14 +39,23 @@ export const initializeNodePositions = (allData, viewBoxSize, albumCollisionPadd
  * Create and configure the D3 force simulation
  */
 export const createSimulation = (allData, albumCollisionPadding) => {
-  return d3.forceSimulation(allData)
-    .force('collide', d3.forceCollide().radius(d => {
+  // Custom collision force that excludes dragged nodes
+  const collide = d3.forceCollide()
+    .radius(d => {
+      // If node is being dragged, set collision radius to 0 to prevent interference
+      if (d._isDragging) {
+        return 0;
+      }
       if (d.isGenre) {
         return d.radius;
       } else {
         return d.radius + albumCollisionPadding;
       }
-    }).strength(SIMULATION_CONFIG.COLLISION_STRENGTH))
+    })
+    .strength(SIMULATION_CONFIG.COLLISION_STRENGTH);
+
+  return d3.forceSimulation(allData)
+    .force('collide', collide)
     .alphaDecay(SIMULATION_CONFIG.ALPHA_DECAY)
     .velocityDecay(SIMULATION_CONFIG.VELOCITY_DECAY);
 };
@@ -56,6 +65,11 @@ export const createSimulation = (allData, albumCollisionPadding) => {
  */
 export const enforceBoundaries = (allData, viewBoxSize, albumCollisionPadding) => {
   allData.forEach(d => {
+    // Skip boundary enforcement for dragged nodes (they're already constrained in drag handler)
+    if (d._isDragging) {
+      return;
+    }
+    
     const boundaryRadius = d.isGenre ? d.radius : (d.radius + albumCollisionPadding);
     const minX = boundaryRadius;
     const maxX = viewBoxSize - boundaryRadius;
