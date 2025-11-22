@@ -84,13 +84,32 @@ function App() {
 
   return (
     <div className="App">
-      <div className="fixed-login-button">
-        <LoginButton
-          isAuthenticated={isAuthenticated}
-          user={user}
-          onLogin={handleLogin}
-          onLogout={handleLogout}
-        />
+      <div className="app-header-top">
+        <div className="header-left">
+          <div className="logo-container">
+            <h1 className="hacksify-logo">Hacksify</h1>
+          </div>
+          {isAuthenticated && (
+            <div className="user-section">
+              <LoginButton
+                isAuthenticated={isAuthenticated}
+                user={user}
+                onLogin={handleLogin}
+                onLogout={handleLogout}
+              />
+            </div>
+          )}
+        </div>
+        {!isAuthenticated && (
+          <div className="fixed-login-button">
+            <LoginButton
+              isAuthenticated={isAuthenticated}
+              user={user}
+              onLogin={handleLogin}
+              onLogout={handleLogout}
+            />
+          </div>
+        )}
       </div>
       <main className="visualizer-container">
         {!isAuthenticated ? (
