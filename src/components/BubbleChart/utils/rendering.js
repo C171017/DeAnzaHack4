@@ -71,7 +71,7 @@ export const createGenreGradients = (defs, genreNodes) => {
 export const renderGenreCircles = (genreNodes) => {
   genreNodes.append('circle')
     .attr('class', 'genre-circle')
-    .attr('r', d => d.circleRadius * 3.5)
+    .attr('r', d => d.circleRadius * 7)
     .attr('cx', 0)
     .attr('cy', 0)
     .attr('fill', d => d.gradientId ? `url(#${d.gradientId})` : '#CCCCCC')

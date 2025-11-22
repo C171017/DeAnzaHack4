@@ -11,7 +11,10 @@ import {
   enforceBoundaries
 } from '../BubbleChart/utils/simulation';
 import {
-  createImagePatterns
+  createImagePatterns,
+  createGenreGradients,
+  renderGenreCircles,
+  renderGenreText
 } from '../BubbleChart/utils/rendering';
 import {
   createDragHandlers,
@@ -29,14 +32,23 @@ import {
 } from '../BubbleChart/utils/scrollbars';
 
 /**
- * EmptyCanvas component - renders an empty SVG canvas that can accept dropped albums
+ * EmptyCanvas component - renders an empty SVG canvas that can accept dropped albums and genres
  * Used after login while albums are loading in the background
  */
-const EmptyCanvas = ({ albums = [], onAlbumDrop, onAlbumDragStart }) => {
+const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, onGenreDrop, onGenreDragStart }) => {
   const svgRef = useRef(null);
   const simulationRef = useRef(null);
+  const zoomTransformRef = useRef(d3.zoomIdentity);
 
   useEffect(() => {
+    // Save current zoom transform before re-rendering
+    if (svgRef.current) {
+      const currentTransform = d3.zoomTransform(svgRef.current);
+      if (currentTransform && currentTransform.k !== 1 || currentTransform.x !== 0 || currentTransform.y !== 0) {
+        zoomTransformRef.current = currentTransform;
+      }
+    }
+
     // Calculate SVG size: 150% of the largest window dimension
     const maxWindowDimension = Math.max(window.innerWidth, window.innerHeight);
     const svgSize = maxWindowDimension * SVG_SIZE_MULTIPLIER;
@@ -76,65 +88,143 @@ const EmptyCanvas = ({ albums = [], onAlbumDrop, onAlbumDragStart }) => {
       .style('pointer-events', 'all')
       .style('cursor', 'default');
 
-    // Setup drop handlers for background
-    backgroundRect
-      .on('dragover', function(event) {
-        event.preventDefault();
-        event.dataTransfer.dropEffect = 'move';
-      })
-      .on('drop', function(event) {
-        event.preventDefault();
-        try {
-          const albumData = JSON.parse(event.dataTransfer.getData('application/json'));
-          if (onAlbumDrop && albumData) {
-            // Get drop position relative to SVG
-            const [x, y] = d3.pointer(event, svg.node());
-            // Transform to viewBox coordinates
-            const transform = d3.zoomTransform(svg.node());
-            const viewBoxX = (x - transform.x) / transform.k;
-            const viewBoxY = (y - transform.y) / transform.k;
-            
-            // Add position to album
-            const albumWithPosition = {
-              ...albumData,
-              x: viewBoxX,
-              y: viewBoxY
-            };
-            onAlbumDrop(albumWithPosition);
+      // Setup drop handlers for background
+      backgroundRect
+        .on('dragover', function(event) {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = 'move';
+        })
+        .on('drop', function(event) {
+          event.preventDefault();
+          try {
+            const data = JSON.parse(event.dataTransfer.getData('application/json'));
+            if (data) {
+              // Get the current zoom transform
+              const transform = d3.zoomTransform(svg.node());
+              
+              // Get pointer position relative to the SVG element
+              const [svgX, svgY] = d3.pointer(event, svg.node());
+              
+              // Transform to viewBox coordinates by applying inverse transform
+              // The transform is: x' = k * x + tx, so inverse is: x = (x' - tx) / k
+              const viewBoxX = (svgX - transform.x) / transform.k;
+              const viewBoxY = (svgY - transform.y) / transform.k;
+              
+              // Clamp position to boundaries
+              const boundaryRadius = data.isGenre ? data.radius : (data.radius + ALBUM_COLLISION_PADDING);
+              const minX = boundaryRadius;
+              const maxX = VIEWBOX_SIZE - boundaryRadius;
+              const minY = boundaryRadius;
+              const maxY = VIEWBOX_SIZE - boundaryRadius;
+              
+              const clampedX = Math.max(minX, Math.min(maxX, viewBoxX));
+              const clampedY = Math.max(minY, Math.min(maxY, viewBoxY));
+              
+              // Find the node in the simulation and fix its position
+              if (simulationRef.current) {
+                const node = simulationRef.current.nodes().find(n => n.id === data.id);
+                if (node) {
+                  // Fix the position in the simulation immediately
+                  node.x = clampedX;
+                  node.y = clampedY;
+                  node.vx = 0;
+                  node.vy = 0;
+                  node.fx = clampedX;
+                  node.fy = clampedY;
+                  
+                  // Update the visual position immediately (before simulation tick)
+                  container.selectAll('.node').each(function(d) {
+                    if (d && d.id === data.id) {
+                      d3.select(this).attr('transform', `translate(${clampedX},${clampedY})`);
+                    }
+                  });
+                  
+                  // Restart simulation to apply the fix
+                  simulationRef.current.alpha(1).restart();
+                  // Release the fix after a short delay to allow physics
+                  setTimeout(() => {
+                    if (node && simulationRef.current) {
+                      const stillExists = simulationRef.current.nodes().find(n => n.id === data.id);
+                      if (stillExists) {
+                        node.fx = null;
+                        node.fy = null;
+                      }
+                    }
+                  }, 500);
+                }
+              }
+              
+              // Add position to item
+              const itemWithPosition = {
+                ...data,
+                x: clampedX,
+                y: clampedY
+              };
+              
+              // Call appropriate handler based on item type
+              // For genres: only move on drop (not on drag start)
+              if (data.isGenre && onGenreDrop) {
+                onGenreDrop(itemWithPosition);
+              } else if (!data.isGenre && onAlbumDrop) {
+                onAlbumDrop(itemWithPosition);
+              }
+            }
+          } catch (error) {
+            console.error('Failed to parse drop data:', error);
           }
-        } catch (error) {
-          console.error('Failed to parse drop data:', error);
-        }
-      });
+        });
 
-    // Define defs for images (create once)
+    // Define defs for images and gradients (create once)
     const defs = svg.append('defs');
 
-    // Render albums if any
-    let simulation = null;
-    if (albums && albums.length > 0) {
-      // Initialize positions for albums that don't have them
-      const albumsWithPositions = albums.map(album => {
-        if (album.x === undefined || album.y === undefined) {
-          return {
-            ...album,
-            x: Math.random() * (VIEWBOX_SIZE - album.radius * 2) + album.radius,
-            y: Math.random() * (VIEWBOX_SIZE - album.radius * 2) + album.radius
-          };
-        }
-        return album;
-      });
+    // Combine albums and genres for simulation
+    const allData = [...(albums || []), ...(genres || [])];
 
-      // Create or update simulation
+    // Render albums and genres if any
+    let simulation = null;
+    if (allData.length > 0) {
+      // Preserve existing positions from simulation if it exists (before stopping)
+      let existingPositions = new Map();
       if (simulationRef.current) {
+        const existingNodes = simulationRef.current.nodes();
+        existingNodes.forEach(node => {
+          if (node.x !== undefined && node.y !== undefined) {
+            existingPositions.set(node.id, { x: node.x, y: node.y });
+          }
+        });
         simulationRef.current.stop();
       }
-      simulation = createSimulation(albumsWithPositions, ALBUM_COLLISION_PADDING);
+      
+      // Initialize positions for items that don't have them, preserving from simulation if available
+      const dataWithPositions = allData.map(item => {
+        // First check if we have this item in the existing simulation
+        const existingPos = existingPositions.get(item.id);
+        if (existingPos) {
+          // Preserve position from simulation
+          return {
+            ...item,
+            x: existingPos.x,
+            y: existingPos.y
+          };
+        }
+        // Otherwise use position from item data or generate random
+        if (item.x !== undefined && item.y !== undefined) {
+          return item;
+        }
+        return {
+          ...item,
+          x: Math.random() * (VIEWBOX_SIZE - item.radius * 2) + item.radius,
+          y: Math.random() * (VIEWBOX_SIZE - item.radius * 2) + item.radius
+        };
+      });
+
+      // Create new simulation
+      simulation = createSimulation(dataWithPositions, ALBUM_COLLISION_PADDING);
       simulationRef.current = simulation;
 
-      // Use D3's enter/update/exit pattern
-      const nodes = container.selectAll('.album-node')
-        .data(albumsWithPositions, d => d.id);
+      // Use D3's enter/update/exit pattern for all nodes
+      const nodes = container.selectAll('.node')
+        .data(dataWithPositions, d => d.id);
 
       // Remove exiting nodes
       nodes.exit().remove();
@@ -142,12 +232,14 @@ const EmptyCanvas = ({ albums = [], onAlbumDrop, onAlbumDragStart }) => {
       // Enter new nodes
       const nodesEnter = nodes.enter()
         .append('g')
-        .attr('class', 'album-node')
+        .attr('class', d => d.isGenre ? 'node genre-node' : 'node album-node')
+        .attr('data-id', d => d.id)
         .style('cursor', 'grab')
         .attr('transform', d => `translate(${d.x},${d.y})`);
 
-      // Add rectangles to new nodes
-      nodesEnter.append('rect')
+      // Add rectangles to album nodes
+      nodesEnter.filter(d => !d.isGenre)
+        .append('rect')
         .attr('width', d => d.radius * 2)
         .attr('height', d => d.radius * 2)
         .attr('x', d => -d.radius)
@@ -161,8 +253,9 @@ const EmptyCanvas = ({ albums = [], onAlbumDrop, onAlbumDragStart }) => {
       // Merge enter and update
       const nodesMerged = nodesEnter.merge(nodes);
 
-      // Update fill for all nodes (including new ones)
-      nodesMerged.select('rect')
+      // Update fill for album nodes
+      nodesMerged.filter(d => !d.isGenre)
+        .select('rect')
         .attr('fill', (d) => {
           if (d.img && d.patternId) {
             return `url(#${d.patternId})`;
@@ -170,10 +263,20 @@ const EmptyCanvas = ({ albums = [], onAlbumDrop, onAlbumDragStart }) => {
           return '#333';
         });
 
-      // Create image patterns
-      createImagePatterns(defs, nodesMerged);
+      // Create image patterns for albums
+      const albumNodes = nodesMerged.filter(d => !d.isGenre);
+      createImagePatterns(defs, albumNodes);
 
-      // Setup drag handlers for albums (D3 drag for canvas movement)
+      // Create gradients for genres
+      const genreNodes = nodesMerged.filter(d => d.isGenre);
+      createGenreGradients(defs, genreNodes);
+
+      // Render genre circles and text for new nodes only
+      const genreNodesEnter = nodesEnter.filter(d => d.isGenre);
+      renderGenreCircles(genreNodesEnter);
+      renderGenreText(genreNodesEnter);
+
+      // Setup drag handlers for all nodes (D3 drag for canvas movement)
       const { dragstarted, dragged, dragended } = createDragHandlers(simulation, ALBUM_COLLISION_PADDING);
       const nodeDrag = d3.drag()
         .on('start', function(event, d) {
@@ -182,7 +285,9 @@ const EmptyCanvas = ({ albums = [], onAlbumDrop, onAlbumDragStart }) => {
           }
           dragstarted(event, d);
           // Mark as being dragged for library drop
-          if (onAlbumDragStart) {
+          if (d.isGenre && onGenreDragStart) {
+            onGenreDragStart(d);
+          } else if (!d.isGenre && onAlbumDragStart) {
             onAlbumDragStart(d);
           }
         })
@@ -202,7 +307,7 @@ const EmptyCanvas = ({ albums = [], onAlbumDrop, onAlbumDragStart }) => {
 
       nodesMerged.call(nodeDrag);
 
-      // Make albums draggable to library (HTML5 drag for library drop)
+      // Make nodes draggable to library (HTML5 drag for library drop)
       nodesMerged
         .attr('draggable', 'true')
         .on('dragstart', function(event, d) {
@@ -210,12 +315,12 @@ const EmptyCanvas = ({ albums = [], onAlbumDrop, onAlbumDragStart }) => {
           event.dataTransfer.setData('application/json', JSON.stringify(d));
         });
 
-      // Setup click handlers for albums
-      setupAlbumClickHandlers(nodesMerged);
+      // Setup click handlers for albums only
+      setupAlbumClickHandlers(albumNodes);
 
       // Simulation tick with boundary constraints
       simulation.on('tick', () => {
-        enforceBoundaries(albumsWithPositions, VIEWBOX_SIZE, ALBUM_COLLISION_PADDING);
+        enforceBoundaries(dataWithPositions, VIEWBOX_SIZE, ALBUM_COLLISION_PADDING);
         nodesMerged.attr('transform', d => `translate(${d.x},${d.y})`);
       });
     } else {
@@ -226,10 +331,13 @@ const EmptyCanvas = ({ albums = [], onAlbumDrop, onAlbumDragStart }) => {
       }
     }
 
-    // Setup zoom and pan
-    let currentTransform = d3.zoomIdentity;
+    // Setup zoom and pan - preserve existing transform
+    let currentTransform = zoomTransformRef.current || d3.zoomIdentity;
     const getCurrentTransform = () => currentTransform;
-    const setCurrentTransform = (transform) => { currentTransform = transform; };
+    const setCurrentTransform = (transform) => { 
+      currentTransform = transform;
+      zoomTransformRef.current = transform;
+    };
 
     // Detect if device is touch-enabled
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -245,9 +353,16 @@ const EmptyCanvas = ({ albums = [], onAlbumDrop, onAlbumDragStart }) => {
     // Create zoom behavior
     const zoom = createZoomBehavior(container, wrappedUpdateScrollbars, getCurrentTransform, setCurrentTransform);
 
-    container.attr('transform', 'translate(0, 0) scale(1)');
-    svg.call(zoom)
+    // Restore previous zoom transform or set to identity
+    const savedTransform = zoomTransformRef.current || d3.zoomIdentity;
+    // Apply transform without triggering events
+    container.attr('transform', `translate(${savedTransform.x}, ${savedTransform.y}) scale(${savedTransform.k})`);
+    // Set the zoom state without dispatching events
+    svg.call(zoom.transform, savedTransform)
       .on('dblclick.zoom', null);
+    
+    // Update the current transform reference
+    currentTransform = savedTransform;
 
     setupPanHandlers(svg, container, zoom, getCurrentTransform, setCurrentTransform, wrappedUpdateScrollbars);
     setupCursorManagement(svg);
@@ -300,7 +415,7 @@ const EmptyCanvas = ({ albums = [], onAlbumDrop, onAlbumDragStart }) => {
       }
       d3.selectAll('.bubble-chart-scrollbars').remove();
     };
-  }, [albums, onAlbumDrop, onAlbumDragStart]);
+  }, [albums, genres, onAlbumDrop, onAlbumDragStart, onGenreDrop, onGenreDragStart]);
 
   return <svg ref={svgRef} />;
 };

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import BubbleChart from './components/BubbleChart';
 import EmptyCanvas from './components/EmptyCanvas';
 import AlbumLibrary from './components/AlbumLibrary';
+import GenreLibrary from './components/GenreLibrary';
 import LoginButton from './components/LoginButton';
 import LoadingState from './components/LoadingState';
 import ErrorState from './components/ErrorState';
@@ -17,13 +18,17 @@ function App() {
     data, 
     albums, 
     libraryAlbums, 
-    canvasAlbums, 
+    canvasAlbums,
+    libraryGenres,
+    canvasGenres,
     loading: albumsLoading, 
     error: albumsError, 
     loadInitialAlbums, 
     loadSavedAlbums, 
     moveAlbumToCanvas,
     moveAlbumToLibrary,
+    moveGenreToCanvas,
+    moveGenreToLibrary,
     setError 
   } = useAlbums();
 
@@ -112,21 +117,35 @@ function App() {
           ) : (
             <EmptyCanvas 
               albums={canvasAlbums}
+              genres={canvasGenres}
               onAlbumDrop={moveAlbumToCanvas}
               onAlbumDragStart={(album) => {
                 // Album is being dragged from canvas, will be handled on drop
+              }}
+              onGenreDrop={moveGenreToCanvas}
+              onGenreDragStart={(genre) => {
+                // Genre is being dragged from canvas, will be handled on drop
               }}
             />
           )
         )}
       </main>
       {isAuthenticated && (
-        <AlbumLibrary 
-          albums={libraryAlbums} 
-          loading={albumsLoading}
-          onAlbumDragStart={moveAlbumToCanvas}
-          onAlbumDrop={moveAlbumToLibrary}
-        />
+        <>
+          <GenreLibrary 
+            genres={libraryGenres}
+            onGenreDragStart={(genre) => {
+              // Visual feedback only, actual move happens on drop
+            }}
+            onGenreDrop={moveGenreToLibrary}
+          />
+          <AlbumLibrary 
+            albums={libraryAlbums} 
+            loading={albumsLoading}
+            onAlbumDragStart={moveAlbumToCanvas}
+            onAlbumDrop={moveAlbumToLibrary}
+          />
+        </>
       )}
     </div>
   );

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getSavedAlbums } from '../utils/spotifyApi';
 import initialAlbumsData from '../data/initialAlbums.json';
+import { GENRES, GENRE_COLORS, GENRE_TEXT_FONT_SIZE, GENRE_COLLISION_PADDING } from '../components/BubbleChart/constants';
 
 // Import initial album images
 import album1 from '../assets/images/initial-screen-albums/album-1.jpg';
@@ -56,6 +57,23 @@ const transformInitialAlbums = () => {
 };
 
 /**
+ * Create initial genre data for library
+ */
+const createInitialGenres = () => {
+  const genreCollisionRadius = (GENRE_TEXT_FONT_SIZE / 2) + GENRE_COLLISION_PADDING;
+  return GENRES.map(genre => ({
+    id: `genre-${genre}`,
+    name: genre,
+    radius: genreCollisionRadius,
+    circleRadius: 80,
+    isGenre: true,
+    color: GENRE_COLORS[genre] || '#CCCCCC',
+    x: undefined,
+    y: undefined
+  }));
+};
+
+/**
  * Custom hook for managing albums data
  */
 export const useAlbums = () => {
@@ -63,14 +81,26 @@ export const useAlbums = () => {
   const [albums, setAlbums] = useState([]);
   const [libraryAlbums, setLibraryAlbums] = useState([]);
   const [canvasAlbums, setCanvasAlbums] = useState([]);
+  const [libraryGenres, setLibraryGenres] = useState([]);
+  const [canvasGenres, setCanvasGenres] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Initialize genres in library on mount
+  useEffect(() => {
+    const initialGenres = createInitialGenres();
+    setLibraryGenres(initialGenres);
+  }, []);
 
   const loadInitialAlbums = () => {
     const initialData = transformInitialAlbums();
     setData(initialData);
     setLibraryAlbums([]);
     setCanvasAlbums([]);
+    // Reset genres to library
+    const initialGenres = createInitialGenres();
+    setLibraryGenres(initialGenres);
+    setCanvasGenres([]);
   };
 
   // Move album from library to canvas
@@ -82,18 +112,18 @@ export const useAlbums = () => {
       // Check if album already exists on canvas
       const existingIndex = prev.findIndex(a => a.id === album.id);
       if (existingIndex >= 0) {
-        // Update existing album (e.g., position update on drop)
+        // Update existing album position (on drop with new position)
         const updated = [...prev];
         updated[existingIndex] = {
           ...updated[existingIndex],
           ...album,
-          // Preserve position if album already has one and new one is not explicitly set
+          // Always use the new position if provided
           x: album.x !== undefined ? album.x : updated[existingIndex].x,
           y: album.y !== undefined ? album.y : updated[existingIndex].y
         };
         return updated;
       }
-      // Initialize position if not set
+      // Initialize position if not set (will be updated on drop)
       const albumWithPosition = {
         ...album,
         x: album.x !== undefined ? album.x : Math.random() * (1920 - album.radius * 2) + album.radius,
@@ -115,12 +145,58 @@ export const useAlbums = () => {
     });
   };
 
+  // Move genre from library to canvas
+  const moveGenreToCanvas = (genre) => {
+    // Remove from library
+    setLibraryGenres(prev => prev.filter(g => g.id !== genre.id));
+    
+    setCanvasGenres(prev => {
+      // Check if genre already exists on canvas
+      const existingIndex = prev.findIndex(g => g.id === genre.id);
+      if (existingIndex >= 0) {
+        // Update existing genre position (on drop with new position)
+        const updated = [...prev];
+        updated[existingIndex] = {
+          ...updated[existingIndex],
+          ...genre,
+          // Always use the new position if provided
+          x: genre.x !== undefined ? genre.x : updated[existingIndex].x,
+          y: genre.y !== undefined ? genre.y : updated[existingIndex].y
+        };
+        return updated;
+      }
+      // Initialize position if not set (will be updated on drop)
+      const genreWithPosition = {
+        ...genre,
+        x: genre.x !== undefined ? genre.x : Math.random() * (1920 - genre.radius * 2) + genre.radius,
+        y: genre.y !== undefined ? genre.y : Math.random() * (1920 - genre.radius * 2) + genre.radius
+      };
+      return [...prev, genreWithPosition];
+    });
+  };
+
+  // Move genre from canvas to library
+  const moveGenreToLibrary = (genre) => {
+    setCanvasGenres(prev => prev.filter(g => g.id !== genre.id));
+    setLibraryGenres(prev => {
+      // Check if genre already exists in library
+      if (prev.find(g => g.id === genre.id)) {
+        return prev;
+      }
+      return [...prev, genre];
+    });
+  };
+
   const loadSavedAlbums = async (token) => {
     try {
       setLoading(true);
       setData([]); // Clear existing data before loading new albums
       setLibraryAlbums([]); // Clear library albums
       setCanvasAlbums([]); // Clear canvas albums
+      // Reset genres to library
+      const initialGenres = createInitialGenres();
+      setLibraryGenres(initialGenres);
+      setCanvasGenres([]);
       const DISPLAY_LIMIT = 50;
       let allAlbums = [];
       let displayedCount = 0;
@@ -201,12 +277,16 @@ export const useAlbums = () => {
     albums,
     libraryAlbums,
     canvasAlbums,
+    libraryGenres,
+    canvasGenres,
     loading,
     error,
     loadInitialAlbums,
     loadSavedAlbums,
     moveAlbumToCanvas,
     moveAlbumToLibrary,
+    moveGenreToCanvas,
+    moveGenreToLibrary,
     setError
   };
 };
