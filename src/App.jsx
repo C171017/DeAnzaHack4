@@ -31,6 +31,7 @@ function App() {
     moveAlbumToLibrary,
     moveGenreToCanvas,
     moveGenreToLibrary,
+    updateCanvasItemPosition,
     setError 
   } = useAlbums();
 
@@ -160,6 +161,7 @@ function App() {
               onGenreDragStart={(genre) => {
                 // Genre is being dragged from canvas, will be handled on drop
               }}
+              onPositionUpdate={updateCanvasItemPosition}
             />
           )
         )}

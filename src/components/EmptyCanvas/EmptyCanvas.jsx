@@ -35,7 +35,7 @@ import {
  * EmptyCanvas component - renders an empty SVG canvas that can accept dropped albums and genres
  * Used after login while albums are loading in the background
  */
-const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, onGenreDrop, onGenreDragStart }) => {
+const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, onGenreDrop, onGenreDragStart, onPositionUpdate }) => {
   const svgRef = useRef(null);
   const simulationRef = useRef(null);
   const zoomTransformRef = useRef(d3.zoomIdentity);
@@ -305,6 +305,15 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
           }
           dragended(event, d);
           d3.select(this).style('cursor', 'grab');
+          
+          // Save position after drag ends
+          if (onPositionUpdate && d.x !== undefined && d.y !== undefined) {
+            onPositionUpdate({
+              ...d,
+              x: d.x,
+              y: d.y
+            });
+          }
         });
 
       nodesMerged.call(nodeDrag);
@@ -417,7 +426,7 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
       }
       d3.selectAll('.bubble-chart-scrollbars').remove();
     };
-  }, [albums, genres, onAlbumDrop, onAlbumDragStart, onGenreDrop, onGenreDragStart]);
+  }, [albums, genres, onAlbumDrop, onAlbumDragStart, onGenreDrop, onGenreDragStart, onPositionUpdate]);
 
   return <svg ref={svgRef} />;
 };

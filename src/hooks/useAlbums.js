@@ -1,7 +1,63 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getSavedAlbums } from '../utils/spotifyApi';
 import initialAlbumsData from '../data/initialAlbums.json';
 import { GENRES, GENRE_COLORS, GENRE_TEXT_FONT_SIZE, GENRE_COLLISION_PADDING } from '../components/BubbleChart/constants';
+
+const STORAGE_KEY = 'hacksify_canvas_positions';
+
+/**
+ * Save canvas state to localStorage
+ */
+const saveCanvasState = (canvasAlbums, canvasGenres) => {
+  try {
+    const state = {
+      canvasAlbums: canvasAlbums.map(album => ({
+        id: album.id,
+        x: album.x,
+        y: album.y,
+        name: album.name,
+        artist: album.artist,
+        img: album.img,
+        radius: album.radius,
+        group: album.group,
+        releaseDate: album.releaseDate,
+        totalTracks: album.totalTracks,
+        spotifyUrl: album.spotifyUrl,
+        album: album.album // Full album object if available
+      })),
+      canvasGenres: canvasGenres.map(genre => ({
+        id: genre.id,
+        x: genre.x,
+        y: genre.y,
+        name: genre.name,
+        color: genre.color,
+        radius: genre.radius,
+        circleRadius: genre.circleRadius,
+        isGenre: genre.isGenre
+      }))
+    };
+    
+    console.log('saving canvas state', state);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (error) {
+    console.error('Failed to save canvas state:', error);
+  }
+};
+
+/**
+ * Load canvas state from localStorage
+ */
+const loadCanvasState = () => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (error) {
+    console.error('Failed to load canvas state:', error);
+  }
+  return null;
+};
 
 // Import initial album images
 import album1 from '../assets/images/initial-screen-albums/album-1.jpg';
@@ -125,12 +181,84 @@ export const useAlbums = () => {
   const [canvasGenres, setCanvasGenres] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const isRestoringRef = useRef(false);
 
   // Initialize genres in library on mount
   useEffect(() => {
     const initialGenres = createInitialGenres();
     setLibraryGenres(initialGenres);
   }, []);
+
+  // Save canvas state to localStorage whenever it changes (but not during restoration)
+  useEffect(() => {
+    if (!isRestoringRef.current) {
+      // Only save if there's actually something to save (avoid overwriting with empty arrays on initial mount)
+      if (canvasAlbums.length > 0 || canvasGenres.length > 0) {
+        saveCanvasState(canvasAlbums, canvasGenres);
+      }
+    }
+  }, [canvasAlbums, canvasGenres]);
+
+  // Restore canvas state from localStorage
+  const restoreCanvasState = (availableAlbums, availableGenres) => {
+    const savedState = loadCanvasState();
+    if (!savedState) return;
+
+    isRestoringRef.current = true;
+
+    try {
+      // Restore albums
+      if (savedState.canvasAlbums && savedState.canvasAlbums.length > 0) {
+        const albumMap = new Map(availableAlbums.map(a => [a.id, a]));
+        const restoredAlbums = savedState.canvasAlbums
+          .filter(savedAlbum => albumMap.has(savedAlbum.id))
+          .map(savedAlbum => {
+            const currentAlbum = albumMap.get(savedAlbum.id);
+            return {
+              ...currentAlbum,
+              x: savedAlbum.x,
+              y: savedAlbum.y
+            };
+          });
+        
+        if (restoredAlbums.length > 0) {
+          setCanvasAlbums(restoredAlbums);
+          // Remove restored albums from library
+          const restoredAlbumIds = new Set(restoredAlbums.map(a => a.id));
+          setLibraryAlbums(prev => prev.filter(a => !restoredAlbumIds.has(a.id)));
+        }
+      }
+
+      // Restore genres
+      if (savedState.canvasGenres && savedState.canvasGenres.length > 0) {
+        const genreMap = new Map(availableGenres.map(g => [g.id, g]));
+        const restoredGenres = savedState.canvasGenres
+          .filter(savedGenre => genreMap.has(savedGenre.id))
+          .map(savedGenre => {
+            const currentGenre = genreMap.get(savedGenre.id);
+            return {
+              ...currentGenre,
+              x: savedGenre.x,
+              y: savedGenre.y
+            };
+          });
+        
+        if (restoredGenres.length > 0) {
+          setCanvasGenres(restoredGenres);
+          // Remove restored genres from library
+          const restoredGenreIds = new Set(restoredGenres.map(g => g.id));
+          setLibraryGenres(prev => prev.filter(g => !restoredGenreIds.has(g.id)));
+        }
+      }
+    } catch (error) {
+      console.error('Failed to restore canvas state:', error);
+    } finally {
+      // Reset flag after a short delay to allow state updates to complete
+      setTimeout(() => {
+        isRestoringRef.current = false;
+      }, 100);
+    }
+  };
 
   const loadInitialAlbums = () => {
     const initialData = transformInitialAlbums();
@@ -141,6 +269,11 @@ export const useAlbums = () => {
     const initialGenres = createInitialGenres();
     setLibraryGenres(initialGenres);
     setCanvasGenres([]);
+    
+    // Restore saved positions after a short delay to ensure state is set
+    setTimeout(() => {
+      restoreCanvasState(initialData, initialGenres);
+    }, 50);
   };
 
   // Move album from library to canvas
@@ -230,57 +363,177 @@ export const useAlbums = () => {
     });
   };
 
+  // Update position of existing canvas item (for drag updates)
+  const updateCanvasItemPosition = (item) => {
+    if (item.isGenre) {
+      setCanvasGenres(prev => {
+        const existingIndex = prev.findIndex(g => g.id === item.id);
+        if (existingIndex >= 0) {
+          const updated = [...prev];
+          updated[existingIndex] = {
+            ...updated[existingIndex],
+            x: item.x,
+            y: item.y
+          };
+          return updated;
+        }
+        return prev;
+      });
+    } else {
+      setCanvasAlbums(prev => {
+        const existingIndex = prev.findIndex(a => a.id === item.id);
+        if (existingIndex >= 0) {
+          const updated = [...prev];
+          updated[existingIndex] = {
+            ...updated[existingIndex],
+            x: item.x,
+            y: item.y
+          };
+          return updated;
+        }
+        return prev;
+      });
+    }
+  };
+
   const loadSavedAlbums = async (token) => {
     try {
       setLoading(true);
       setData([]); // Clear existing data before loading new albums
       setLibraryAlbums([]); // Clear library albums
-      setCanvasAlbums([]); // Clear canvas albums
+      
       // Reset genres to library
       const initialGenres = createInitialGenres();
       setLibraryGenres(initialGenres);
-      setCanvasGenres([]);
+      
+      // RESTORE SAVED STATE IMMEDIATELY (before API calls) with placeholders
+      const savedState = loadCanvasState();
+      isRestoringRef.current = true;
+      
+      // Restore genres immediately (they don't need API data)
+      if (savedState?.canvasGenres && savedState.canvasGenres.length > 0) {
+        const genreMap = new Map(initialGenres.map(g => [g.id, g]));
+        const restoredGenres = savedState.canvasGenres
+          .filter(savedGenre => genreMap.has(savedGenre.id))
+          .map(savedGenre => {
+            const currentGenre = genreMap.get(savedGenre.id);
+            return {
+              ...currentGenre,
+              x: savedGenre.x,
+              y: savedGenre.y
+            };
+          });
+        
+        if (restoredGenres.length > 0) {
+          setCanvasGenres(restoredGenres);
+          const restoredGenreIds = new Set(restoredGenres.map(g => g.id));
+          setLibraryGenres(prev => prev.filter(g => !restoredGenreIds.has(g.id)));
+        }
+      } else {
+        setCanvasGenres([]);
+      }
+      
+      // Create placeholder albums from saved state
+      if (savedState?.canvasAlbums && savedState.canvasAlbums.length > 0) {
+        const placeholderAlbums = savedState.canvasAlbums.map(savedAlbum => ({
+          id: savedAlbum.id,
+          name: savedAlbum.name || 'Loading...',
+          artist: savedAlbum.artist || 'Unknown Artist',
+          img: savedAlbum.img || 'https://via.placeholder.com/140?text=Loading',
+          radius: savedAlbum.radius || 70,
+          group: savedAlbum.group || 'Unknown Artist',
+          releaseDate: savedAlbum.releaseDate,
+          totalTracks: savedAlbum.totalTracks,
+          spotifyUrl: savedAlbum.spotifyUrl,
+          x: savedAlbum.x,
+          y: savedAlbum.y,
+          isPlaceholder: true,
+          album: savedAlbum.album // Preserve full album object if available
+        }));
+        setCanvasAlbums(placeholderAlbums);
+      } else {
+        setCanvasAlbums([]);
+      }
+      
+      // Reset restoration flag after a short delay
+      setTimeout(() => {
+        isRestoringRef.current = false;
+      }, 100);
+      
       const DISPLAY_LIMIT = 50;
       let allAlbums = [];
+      let allTransformedAlbums = []; // Track all transformed albums
       let displayedCount = 0;
       let offset = 0;
       const limit = 50;
       let hasMore = true;
-      
-      console.log('=== Loading User\'s Saved Albums ===');
 
       while (hasMore) {
         const response = await getSavedAlbums(token, limit, offset);
         const newAlbums = response.items;
         allAlbums = allAlbums.concat(newAlbums);
         
-        // Display only the first 50 albums incrementally
-        if (displayedCount < DISPLAY_LIMIT) {
-          const albumsToDisplay = newAlbums.slice(0, DISPLAY_LIMIT - displayedCount);
+        // Transform ALL new albums (for placeholder replacement)
+        const allTransformedNew = newAlbums.map((item, index) => {
+          const album = item.album;
+          return {
+            id: album.id,
+            name: album.name,
+            radius: 70,
+            group: album.artists[0]?.name || 'Unknown Artist',
+            img: album.images[0]?.url || `https://picsum.photos/seed/${offset + index}/200`,
+            album: album,
+            artist: album.artists[0]?.name,
+            releaseDate: album.release_date,
+            totalTracks: album.total_tracks,
+            spotifyUrl: album.external_urls?.spotify || null
+          };
+        });
+        
+        // Replace placeholders with real album data if IDs match (for ALL albums, not just first 50)
+        setCanvasAlbums(prev => {
+          const updated = [...prev];
+          const replacedIds = new Set();
           
-          // Transform albums for bubble chart
-          const transformedBatch = albumsToDisplay.map((item, index) => {
-            const album = item.album;
-            return {
-              id: album.id,
-              name: album.name,
-              radius: 70,
-              group: album.artists[0]?.name || 'Unknown Artist',
-              img: album.images[0]?.url || `https://picsum.photos/seed/${displayedCount + index}/200`,
-              album: album,
-              artist: album.artists[0]?.name,
-              releaseDate: album.release_date,
-              totalTracks: album.total_tracks,
-              spotifyUrl: album.external_urls?.spotify || null
-            };
+          allTransformedNew.forEach(realAlbum => {
+            const placeholderIndex = updated.findIndex(a => a.id === realAlbum.id && a.isPlaceholder);
+            if (placeholderIndex >= 0) {
+              // Replace placeholder with real album data, preserving position
+              const placeholder = updated[placeholderIndex];
+              updated[placeholderIndex] = {
+                ...realAlbum,
+                x: placeholder.x,
+                y: placeholder.y,
+                // Remove isPlaceholder flag
+              };
+              replacedIds.add(realAlbum.id);
+            }
           });
           
-          // Incrementally add to library (not canvas) with deduplication
-          setLibraryAlbums(prev => addAlbumsWithDeduplication(prev, transformedBatch));
-          setData(prevData => addAlbumsWithDeduplication(prevData, transformedBatch));
-          displayedCount += albumsToDisplay.length;
+          return updated;
+        });
+        
+        // Display only the first 50 albums incrementally
+        if (displayedCount < DISPLAY_LIMIT) {
+          const albumsToDisplay = allTransformedNew.slice(0, DISPLAY_LIMIT - displayedCount);
           
-          console.log(`Loaded and displayed ${displayedCount} albums...`);
+          // Track all transformed albums
+          allTransformedAlbums = addAlbumsWithDeduplication(allTransformedAlbums, albumsToDisplay);
+          
+          // Add albums to library (excluding those that are on canvas)
+          setCanvasAlbums(currentCanvas => {
+            const canvasAlbumIds = new Set(currentCanvas.map(a => a.id));
+            const albumsForLibrary = albumsToDisplay.filter(a => !canvasAlbumIds.has(a.id));
+            
+            if (albumsForLibrary.length > 0) {
+              setLibraryAlbums(prev => addAlbumsWithDeduplication(prev, albumsForLibrary));
+            }
+            
+            return currentCanvas; // Don't change canvas
+          });
+          
+          setData(prevData => addAlbumsWithDeduplication(prevData, albumsToDisplay));
+          displayedCount += albumsToDisplay.length;
         }
         
         hasMore = response.next !== null;
@@ -294,19 +547,9 @@ export const useAlbums = () => {
       }
       
       setAlbums(allAlbums);
-      console.log(`Total albums loaded: ${allAlbums.length}`);
-      console.log(`Displaying: ${Math.min(displayedCount, DISPLAY_LIMIT)} albums`);
-      
-      // Output first 50 albums to console
-      allAlbums.slice(0, DISPLAY_LIMIT).forEach((item, index) => {
-        const album = item.album;
-        console.log(`${index + 1}. ${album.name} by ${album.artists.map(a => a.name).join(', ')}`);
-        console.log(`   - Release Date: ${album.release_date}`);
-        console.log(`   - Total Tracks: ${album.total_tracks}`);
-        console.log(`   - Album Art: ${album.images[0]?.url || 'N/A'}`);
-        console.log(`   - Spotify URL: ${album.external_urls.spotify}`);
-        console.log('---');
-      });
+
+      // Note: Restoration already happened at the beginning with placeholders
+      // Placeholders are replaced with real data as albums load above
     } catch (error) {
       console.error('Failed to load albums:', error);
       setError(`Failed to load albums: ${error.message}`);
@@ -330,6 +573,7 @@ export const useAlbums = () => {
     moveAlbumToLibrary,
     moveGenreToCanvas,
     moveGenreToLibrary,
+    updateCanvasItemPosition,
     setError
   };
 };
