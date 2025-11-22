@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { SCROLLBAR_CONFIG, ZOOM_CONFIG } from '../constants';
+import { SCROLLBAR_CONFIG } from '../constants';
 
 /**
  * Create scrollbar container and elements
@@ -250,98 +250,5 @@ export const setupScrollbarDragHandlers = (
   return () => {
     document.removeEventListener('mousemove', handleScrollbarMouseMove);
     document.removeEventListener('mouseup', handleScrollbarMouseUp);
-  };
-};
-
-/**
- * Setup scrollbar wheel handlers for zooming with Ctrl key
- */
-export const setupScrollbarWheelHandlers = (
-  horizontalTrack,
-  verticalTrack,
-  getCurrentTransform,
-  setCurrentTransform,
-  container,
-  svg,
-  zoom,
-  updateScrollbars
-) => {
-  const handleScrollbarWheel = function(event) {
-    // Only handle if Ctrl (or Cmd on Mac) is pressed
-    if (!event.ctrlKey && !event.metaKey) {
-      return;
-    }
-    
-    event.preventDefault();
-    event.stopPropagation();
-    
-    const currentTransform = getCurrentTransform();
-    const scale = currentTransform.k;
-    
-    // Determine zoom direction based on wheel delta
-    const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
-    const newScale = Math.max(
-      ZOOM_CONFIG.MIN_ZOOM,
-      Math.min(ZOOM_CONFIG.MAX_ZOOM, scale * zoomFactor)
-    );
-    
-    // Calculate zoom point at the center of the viewport
-    const centerX = window.innerWidth / 2;
-    const centerY = window.innerHeight / 2;
-    
-    // Get SVG bounding box to calculate the zoom point in SVG coordinates
-    const svgNode = svg.node();
-    const svgRect = svgNode.getBoundingClientRect();
-    const point = d3.pointer(event, svgNode);
-    
-    // Use the center of the viewport as the zoom point
-    const zoomPoint = [centerX - svgRect.left, centerY - svgRect.top];
-    
-    // Calculate the new transform with zoom centered at the viewport center
-    const newTransform = currentTransform
-      .scale(newScale)
-      .translate(
-        (centerX - zoomPoint[0] * newScale) / newScale,
-        (centerY - zoomPoint[1] * newScale) / newScale
-      );
-    
-    // Alternative approach: zoom at viewport center
-    const viewportCenterX = window.innerWidth / 2;
-    const viewportCenterY = window.innerHeight / 2;
-    
-    // Convert viewport center to SVG coordinates
-    const svgPoint = d3.pointer([viewportCenterX, viewportCenterY], svgNode);
-    
-    // Calculate new transform
-    const scaleChange = newScale / scale;
-    const newX = viewportCenterX - (viewportCenterX - currentTransform.x) * scaleChange;
-    const newY = viewportCenterY - (viewportCenterY - currentTransform.y) * scaleChange;
-    
-    const finalTransform = d3.zoomIdentity
-      .translate(newX, newY)
-      .scale(newScale);
-    
-    setCurrentTransform(finalTransform);
-    container.attr('transform', `translate(${finalTransform.x},${finalTransform.y}) scale(${finalTransform.k})`);
-    svg.call(zoom.transform, finalTransform);
-    updateScrollbars();
-  };
-  
-  // Add wheel event listeners to both scrollbar tracks
-  horizontalTrack.on('wheel', handleScrollbarWheel);
-  verticalTrack.on('wheel', handleScrollbarWheel);
-  
-  // Also add to thumbs for better UX
-  const horizontalThumb = horizontalTrack.select('.scrollbar-thumb');
-  const verticalThumb = verticalTrack.select('.scrollbar-thumb');
-  
-  horizontalThumb.on('wheel', handleScrollbarWheel);
-  verticalThumb.on('wheel', handleScrollbarWheel);
-  
-  return () => {
-    horizontalTrack.on('wheel', null);
-    verticalTrack.on('wheel', null);
-    horizontalThumb.on('wheel', null);
-    verticalThumb.on('wheel', null);
   };
 };
