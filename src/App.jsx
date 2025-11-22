@@ -3,7 +3,6 @@ import BubbleChart from './components/BubbleChart';
 import EmptyCanvas from './components/EmptyCanvas';
 import AlbumLibrary from './components/AlbumLibrary';
 import GenreLibrary from './components/GenreLibrary';
-import LoginButton from './components/LoginButton';
 import LoadingState from './components/LoadingState';
 import ErrorState from './components/ErrorState';
 import EmptyState from './components/EmptyState';
@@ -86,6 +85,8 @@ function App() {
   const handleLogoClick = () => {
     if (isAuthenticated) {
       setIsModalOpen(true);
+    } else {
+      handleLogin();
     }
   };
 
@@ -96,7 +97,7 @@ function App() {
     <div className="App">
       <div className="logo-container-center">
         <h1 
-          className={`hacksify-logo ${isAuthenticated ? 'clickable' : ''}`}
+          className="hacksify-logo clickable"
           onClick={handleLogoClick}
         >
           Hacksify
@@ -118,15 +119,6 @@ function App() {
           </button>
         </div>
       </Modal>
-      {!isAuthenticated && (
-        <div className="fixed-login-button">
-            <LoginButton
-              isAuthenticated={isAuthenticated}
-              user={user}
-              onLogin={handleLogin}
-            />
-        </div>
-      )}
       <main className="visualizer-container">
         {!isAuthenticated ? (
           // Before login: show loading state or bubble chart with initial albums
