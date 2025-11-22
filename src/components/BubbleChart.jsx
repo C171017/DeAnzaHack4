@@ -123,6 +123,9 @@ const BubbleChart = ({ data }) => {
             .attr('fill', '#000000')
             .style('pointer-events', 'none'); // Don't interfere with panning
 
+        // Create a separate group for lines (will be drawn first, so appears underneath)
+        const linesGroup = container.append('g').attr('class', 'lines-group');
+
         // Initialize genre pin positions in a circle pattern
         const centerX = viewBoxSize / 2;
         const centerY = viewBoxSize / 2;
@@ -327,7 +330,7 @@ const BubbleChart = ({ data }) => {
         // Draw colored lines connecting albums to genre pins
         const drawGenreLines = () => {
             // Remove existing lines
-            container.selectAll('.genre-line').remove();
+            linesGroup.selectAll('.genre-line').remove();
 
             data.forEach(album => {
                 const matchedAlbum = matchAlbumWithGenres(album.id);
@@ -345,7 +348,7 @@ const BubbleChart = ({ data }) => {
                         const lineWidth = Math.max(0.5, weight * 0.3); // Line width proportional to weight
                         const opacity = Math.min(0.5, 0.2 + (weight / 10) * 0.3); // Opacity based on weight
 
-                        container.append('line')
+                        linesGroup.append('line')
                             .attr('class', 'genre-line')
                             .attr('x1', album.x)
                             .attr('y1', album.y)
