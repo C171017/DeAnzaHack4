@@ -1,6 +1,40 @@
 import * as d3 from 'd3';
 import { VIEWBOX_SIZE, ALBUM_COLLISION_PADDING } from '../constants';
 
+const addSpotifyPlayParam = (url) => {
+  if (!url) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes('open.spotify.com')) {
+      parsed.searchParams.set('play', '1');
+    }
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+};
+
+const resolveSpotifyPlaybackUrl = (albumData) => {
+  const directTrackUrl =
+    albumData.trackUrl ||
+    albumData.spotifyTrackUrl ||
+    albumData.track?.external_urls?.spotify;
+
+  if (directTrackUrl) {
+    return addSpotifyPlayParam(directTrackUrl);
+  }
+
+  const albumUrl =
+    albumData.spotifyUrl ||
+    albumData.external_urls?.spotify ||
+    albumData.album?.external_urls?.spotify;
+
+  return addSpotifyPlayParam(albumUrl);
+};
+
 /**
  * Create drag handlers for nodes
  */
@@ -72,16 +106,20 @@ export const createDragHandlers = (simulation, albumCollisionPadding) => {
 };
 
 /**
- * Setup double-click handlers for album nodes
+ * Setup click handlers for album nodes
  */
 export const setupAlbumClickHandlers = (albumNodes) => {
   albumNodes
-    .on('dblclick', function(event, d) {
+    .on('click', function(event, d) {
+      if (event.defaultPrevented) {
+        return;
+      }
+
       event.stopPropagation();
-      // For initial albums, check both spotifyUrl and external_urls.spotify
-      const url = d.spotifyUrl || (d.external_urls && d.external_urls.spotify);
+
+      const url = resolveSpotifyPlaybackUrl(d);
       if (url) {
-        window.open(url, '_blank');
+        window.open(url, '_blank', 'noopener,noreferrer');
       }
     });
 };

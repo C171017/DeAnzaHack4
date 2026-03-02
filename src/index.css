@@ -1,11 +1,10 @@
 :root {
-  --bg-color: #ffffff;
-  --bg-secondary: #212121;
-  --text-primary: #000000;
-  --text-secondary: #666666;
-  --accent-color: #a600ff;
-  /* SoundCloud Orange */
-  --font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --bg-color: #050505;
+  --bg-secondary: #141416;
+  --text-primary: #f5f5f7;
+  --text-secondary: #9d9da6;
+  --accent-color: #b43dff;
+  --font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
 }
 
 * {
@@ -42,4 +41,9 @@ button {
   border: none;
   outline: none;
   font-family: inherit;
+}
+
+button:focus-visible {
+  outline: 2px solid rgba(180, 61, 255, 0.7);
+  outline-offset: 2px;
 }

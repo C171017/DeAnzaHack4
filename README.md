@@ -1,5 +1,18 @@
 # Music Bubble Visualizer
 
+## Tech Stack Overview
+
+Hacksify is built as a modern single-page web app with a JavaScript-first frontend and Spotify API integration:
+
+- **React 18** powers the UI and application state.
+- **Vite 5** provides the local development server, hot module reload, and production build pipeline.
+- **D3.js** drives the force simulation and interactive album bubble layout.
+- **React Router** handles client-side routing, including the Spotify OAuth callback flow.
+- **Redux Toolkit + React Redux + redux-persist** support structured state management and persistence where needed.
+- **Framer Motion** is available for interface animation and transitions.
+- **Spotify Web API** supplies user authentication, saved albums, profile data, and listening-related content.
+- **Browser storage APIs** (`localStorage` and `sessionStorage`) are used for tokens, canvas state, and PKCE auth flow support.
+
 A React web application that visualizes music albums as interactive, physics-based bubbles. Built with D3.js for data visualization and React Router for navigation. Features Spotify integration to display user's saved albums.
 
 ## Features

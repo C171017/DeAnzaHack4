@@ -4,28 +4,21 @@ import spotifyLogo from '../assets/images/Spotify Icon/Spotify_icon.svg.png';
 /**
  * Login button component
  */
-const LoginButton = ({ isAuthenticated, user, onLogin }) => {
+const LoginButton = ({ onLogin, disabled = false, label = 'Login with Spotify', className = '' }) => {
   return (
     <button 
       onClick={onLogin}
-      style={{
-        padding: '0',
-        backgroundColor: 'transparent',
-        border: 'none',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}
+      className={`spotify-login-button ${className}`.trim()}
+      type="button"
+      disabled={disabled}
     >
-      <img 
-        src={spotifyLogo} 
-        alt="Spotify Logo" 
-        style={{
-          height: '48px',
-          width: 'auto'
-        }}
-      />
+      <span className="spotify-login-button__icon" aria-hidden="true">
+        <img 
+          src={spotifyLogo} 
+          alt="" 
+        />
+      </span>
+      <span>{label}</span>
     </button>
   );
 };

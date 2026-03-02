@@ -36,21 +36,34 @@ import {
   setupScrollbarDragHandlers
 } from './utils/scrollbars';
 
-const BubbleChart = ({ data }) => {
+const BubbleChart = ({
+  data,
+  includeGenres = true,
+  backgroundFill = '#ffffff',
+  albumShape = 'square',
+  showScrollbars = true
+}) => {
   const svgRef = useRef(null);
 
   useEffect(() => {
     if (!data || data.length === 0) return;
 
-    // Calculate SVG size: 150% of the largest window dimension
-    const maxWindowDimension = Math.max(window.innerWidth, window.innerHeight);
+    const containerElement = svgRef.current?.parentElement;
+    const containerRect = containerElement?.getBoundingClientRect();
+    const viewportWidth = containerRect?.width || window.innerWidth;
+    const viewportHeight = containerRect?.height || window.innerHeight;
+
+    // Calculate SVG size: 150% of the largest visible container dimension
+    const maxWindowDimension = Math.max(viewportWidth, viewportHeight);
     const svgSize = maxWindowDimension * SVG_SIZE_MULTIPLIER;
 
-    // Calculate position to center SVG on window
-    const windowCenterX = window.innerWidth / 2;
-    const windowCenterY = window.innerHeight / 2;
+    // Calculate position to center SVG on its container
+    const windowCenterX = viewportWidth / 2;
+    const windowCenterY = viewportHeight / 2;
     const svgLeft = windowCenterX - svgSize / 2;
     const svgTop = windowCenterY - svgSize / 2;
+
+    const albumData = data.map((item) => ({ ...item }));
 
     const svg = d3.select(svgRef.current)
       .attr('width', svgSize)
@@ -77,7 +90,7 @@ const BubbleChart = ({ data }) => {
       .attr('height', VIEWBOX_SIZE)
       .attr('x', 0)
       .attr('y', 0)
-      .attr('fill', '#ffffff')
+      .attr('fill', backgroundFill)
       .style('pointer-events', 'none');
 
     // Create genre data objects
@@ -85,7 +98,7 @@ const BubbleChart = ({ data }) => {
     const genreData = createGenreData(GENRES, genreCollisionRadius);
 
     // Combine genre data and album data for simulation (genres first so they render below albums)
-    const allData = [...genreData, ...data];
+    const allData = includeGenres ? [...genreData, ...albumData] : albumData;
 
     // Initialize random positions
     initializeNodePositions(allData, VIEWBOX_SIZE, ALBUM_COLLISION_PADDING);
@@ -142,8 +155,10 @@ const BubbleChart = ({ data }) => {
 
     // Render elements in order: genre circles first (below), then albums (on top), then genre text (on top)
     renderGenreCircles(genreNodes);
-    renderAlbumRectangles(albumNodes);
-    renderGenreText(genreNodes);
+    renderAlbumRectangles(albumNodes, albumShape);
+    if (includeGenres) {
+      renderGenreText(genreNodes);
+    }
 
     // Simulation tick with boundary constraints
     simulation.on('tick', () => {
@@ -159,13 +174,17 @@ const BubbleChart = ({ data }) => {
     // Detect if device is touch-enabled
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-    // Create scrollbars
-    const scrollbarElements = createScrollbars(isTouchDevice);
-    const updateScrollbars = createUpdateScrollbars(getCurrentTransform, isTouchDevice);
-    
-    const wrappedUpdateScrollbars = () => {
-      updateScrollbars(scrollbarElements.horizontalThumb, scrollbarElements.verticalThumb);
-    };
+    let cleanupScrollbars = null;
+    let wrappedUpdateScrollbars = () => {};
+    let scrollbarElements = null;
+
+    if (showScrollbars) {
+      scrollbarElements = createScrollbars(isTouchDevice);
+      const updateScrollbars = createUpdateScrollbars(getCurrentTransform, isTouchDevice);
+      wrappedUpdateScrollbars = () => {
+        updateScrollbars(scrollbarElements.horizontalThumb, scrollbarElements.verticalThumb);
+      };
+    }
 
     // Create zoom behavior
     const zoom = createZoomBehavior(container, wrappedUpdateScrollbars, getCurrentTransform, setCurrentTransform);
@@ -177,29 +196,35 @@ const BubbleChart = ({ data }) => {
     setupPanHandlers(svg, container, zoom, getCurrentTransform, setCurrentTransform, wrappedUpdateScrollbars);
     setupCursorManagement(svg);
 
-    // Setup scrollbar drag handlers
-    const cleanupScrollbars = setupScrollbarDragHandlers(
-      scrollbarElements.horizontalThumb,
-      scrollbarElements.verticalThumb,
-      scrollbarElements.horizontalTrack,
-      scrollbarElements.verticalTrack,
-      getCurrentTransform,
-      setCurrentTransform,
-      container,
-      svg,
-      zoom,
-      wrappedUpdateScrollbars
-    );
+    if (showScrollbars && scrollbarElements) {
+      cleanupScrollbars = setupScrollbarDragHandlers(
+        scrollbarElements.horizontalThumb,
+        scrollbarElements.verticalThumb,
+        scrollbarElements.horizontalTrack,
+        scrollbarElements.verticalTrack,
+        getCurrentTransform,
+        setCurrentTransform,
+        container,
+        svg,
+        zoom,
+        wrappedUpdateScrollbars
+      );
+    }
 
     // Initial scrollbar update
-    wrappedUpdateScrollbars();
+    if (showScrollbars) {
+      wrappedUpdateScrollbars();
+    }
 
     // Handle window resize
     const handleResize = () => {
-      const newMaxDimension = Math.max(window.innerWidth, window.innerHeight);
+      const nextContainerRect = containerElement?.getBoundingClientRect();
+      const nextViewportWidth = nextContainerRect?.width || window.innerWidth;
+      const nextViewportHeight = nextContainerRect?.height || window.innerHeight;
+      const newMaxDimension = Math.max(nextViewportWidth, nextViewportHeight);
       const newSvgSize = newMaxDimension * SVG_SIZE_MULTIPLIER;
-      const newWindowCenterX = window.innerWidth / 2;
-      const newWindowCenterY = window.innerHeight / 2;
+      const newWindowCenterX = nextViewportWidth / 2;
+      const newWindowCenterY = nextViewportHeight / 2;
       const newSvgLeft = newWindowCenterX - newSvgSize / 2;
       const newSvgTop = newWindowCenterY - newSvgSize / 2;
       
@@ -209,7 +234,9 @@ const BubbleChart = ({ data }) => {
         .style('left', `${newSvgLeft}px`)
         .style('top', `${newSvgTop}px`);
       
-      wrappedUpdateScrollbars();
+      if (showScrollbars) {
+        wrappedUpdateScrollbars();
+      }
     };
 
     window.addEventListener('resize', handleResize);
@@ -221,9 +248,11 @@ const BubbleChart = ({ data }) => {
       if (cleanupScrollbars) {
         cleanupScrollbars();
       }
-      d3.selectAll('.bubble-chart-scrollbars').remove();
+      if (showScrollbars) {
+        d3.selectAll('.bubble-chart-scrollbars').remove();
+      }
     };
-  }, [data]);
+  }, [albumShape, backgroundFill, data, includeGenres, showScrollbars]);
 
   return <svg ref={svgRef} />;
 };

@@ -1,59 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import BubbleChart from './components/BubbleChart';
-import EmptyCanvas from './components/EmptyCanvas';
-import AlbumLibrary from './components/AlbumLibrary';
-import GenreLibrary from './components/GenreLibrary';
-import LoadingState from './components/LoadingState';
-import ErrorState from './components/ErrorState';
-import EmptyState from './components/EmptyState';
-import Modal from './components/Modal';
+import LoginButton from './components/LoginButton';
 import { useSpotifyAuth } from './hooks/useSpotifyAuth';
 import { useAlbums } from './hooks/useAlbums';
 import { getAuthorizationUrl, getStoredAccessToken } from './utils/spotifyAuth';
 import './App.css';
 
 function App() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const { isAuthenticated, user, loading: authLoading, error: authError, checkAuth, logout } = useSpotifyAuth();
+  const { isAuthenticated, user, loading: authLoading, error: authError, logout } = useSpotifyAuth();
   const { 
     data, 
     albums, 
-    libraryAlbums, 
-    canvasAlbums,
-    libraryGenres,
-    canvasGenres,
     loading: albumsLoading, 
     error: albumsError, 
-    loadInitialAlbums, 
     loadSavedAlbums, 
-    moveAlbumToCanvas,
-    moveAlbumToLibrary,
-    moveGenreToCanvas,
-    moveGenreToLibrary,
-    updateCanvasItemPosition,
     setError 
   } = useAlbums();
-
-  // Load initial album images on mount
-  useEffect(() => {
-    loadInitialAlbums();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Check authentication and load albums on mount
-  useEffect(() => {
-    const token = getStoredAccessToken();
-    if (token) {
-      checkAuthAndLoadAlbums(token);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const checkAuthAndLoadAlbums = async (token) => {
-    await checkAuth(token);
-    // Note: We need to wait for isAuthenticated to update, so we'll handle this differently
-    // For now, we'll load albums after auth check completes
-  };
 
   // Load albums when authentication succeeds
   useEffect(() => {
@@ -78,105 +40,98 @@ function App() {
 
   const handleLogout = () => {
     logout();
-    loadInitialAlbums();
-    setIsModalOpen(false);
   };
 
-  const handleLogoClick = () => {
-    if (isAuthenticated) {
-      setIsModalOpen(true);
-    } else {
-      handleLogin();
-    }
-  };
-
-  const loading = authLoading || albumsLoading;
   const error = authError || albumsError;
+  const userName = user?.display_name?.trim() || user?.id || 'Hi';
+  const greetingName = userName.split(' ')[0];
+  const totalAlbums = albums.length || data.length;
+  const visibleAlbums = data.length;
+
+  if (!isAuthenticated) {
+    return (
+      <div className="App">
+        <section className="login-screen">
+          <div className="login-screen__glow login-screen__glow--left" />
+          <div className="login-screen__glow login-screen__glow--right" />
+          <div className="login-card">
+            <p className="login-kicker">Spotify-powered album constellation</p>
+            <h1 className="login-brand">Hacksify</h1>
+            <p className="login-copy">
+              Start with a focused login screen, then drop users into a dark visual home made from their saved albums.
+            </p>
+            {error ? (
+              <p className="login-error">{error}</p>
+            ) : (
+              <p className="login-hint">Connect your Spotify account to build your personal album map.</p>
+            )}
+            <LoginButton
+              onLogin={handleLogin}
+              disabled={authLoading}
+              label={authLoading ? 'Connecting to Spotify...' : 'Continue With Spotify'}
+            />
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="App">
-      <div className="logo-container-center">
-        <h1 
-          className="hacksify-logo clickable"
-          onClick={handleLogoClick}
-        >
-          Hacksify
-        </h1>
-      </div>
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <div className="modal-body">
-          <h2 className="modal-title">Hacksify</h2>
-          {user && (
-            <div className="modal-user-info">
-              <p className="modal-user-name">{user.display_name || user.id}</p>
-              {user.email && (
-                <p className="modal-user-email">{user.email}</p>
-              )}
+      <div className="dashboard-shell">
+        <header className="dashboard-header">
+          <div className="dashboard-logo">Hacksify</div>
+          <nav className="dashboard-nav" aria-label="Primary">
+            <button className="dashboard-nav__item dashboard-nav__item--active" type="button">Home</button>
+            <button className="dashboard-nav__item" type="button">Stream</button>
+            <button className="dashboard-nav__item" type="button">Library</button>
+          </nav>
+          <div className="dashboard-user">
+            <span className="dashboard-user__name">Hi {greetingName}</span>
+            <button className="dashboard-logout" onClick={handleLogout} type="button">
+              Logout
+            </button>
+          </div>
+        </header>
+
+        <main className="dashboard-stage">
+          {visibleAlbums > 0 ? (
+            <BubbleChart
+              data={data}
+              includeGenres={false}
+              backgroundFill="#050505"
+              albumShape="circle"
+              showScrollbars={false}
+            />
+          ) : (
+            <div className="dashboard-empty">
+              <h2>{albumsLoading ? 'Loading your albums...' : 'No albums available yet'}</h2>
+              <p>
+                {albumsLoading
+                  ? 'Spotify is fetching your saved albums and placing them on the canvas.'
+                  : 'Save a few albums in Spotify, then refresh this page.'}
+              </p>
             </div>
           )}
-          <button className="modal-logout-button" onClick={handleLogout}>
-            Logout
+
+          <div className="dashboard-stat-card">
+            <strong>Albums Displayed: {visibleAlbums}</strong>
+            <span>
+              {albumsLoading ? 'Syncing your Spotify library...' : `Showing ${visibleAlbums} of ${totalAlbums} saved albums`}
+            </span>
+          </div>
+
+          <button className="dashboard-next" type="button" aria-label="Next section">
+            &rarr;
           </button>
-        </div>
-      </Modal>
-      <main className="visualizer-container">
-        {!isAuthenticated ? (
-          // Before login: show loading state or bubble chart with initial albums
-          loading ? (
-            <LoadingState isAuthenticated={isAuthenticated} />
-          ) : error ? (
-            <ErrorState
-              error={error}
-              isAuthenticated={isAuthenticated}
-              onRetry={handleLogin}
-            />
-          ) : (
-            <BubbleChart data={data} />
-          )
-        ) : (
-          // After login: always show empty canvas (loading happens in background)
-          error ? (
-            <ErrorState
-              error={error}
-              isAuthenticated={isAuthenticated}
-              onRetry={handleLogin}
-            />
-          ) : (
-            <EmptyCanvas 
-              albums={canvasAlbums}
-              genres={canvasGenres}
-              onAlbumDrop={moveAlbumToCanvas}
-              onAlbumDragStart={(album) => {
-                // Album is being dragged from canvas, will be handled on drop
-              }}
-              onGenreDrop={moveGenreToCanvas}
-              onGenreDragStart={(genre) => {
-                // Genre is being dragged from canvas, will be handled on drop
-              }}
-              onPositionUpdate={updateCanvasItemPosition}
-            />
-          )
-        )}
-      </main>
-      {isAuthenticated && (
-        <>
-          <GenreLibrary 
-            genres={libraryGenres}
-            onGenreDragStart={(genre) => {
-              // Visual feedback only, actual move happens on drop
-            }}
-            onGenreDrop={moveGenreToLibrary}
-          />
-          <AlbumLibrary 
-            albums={libraryAlbums} 
-            loading={albumsLoading}
-            onAlbumDragStart={(album) => {
-              // Visual feedback only, actual move happens on drop
-            }}
-            onAlbumDrop={moveAlbumToLibrary}
-          />
-        </>
-      )}
+
+          {error && (
+            <div className="dashboard-error">
+              {error}
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 }

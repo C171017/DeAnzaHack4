@@ -80,20 +80,34 @@ export const renderGenreCircles = (genreNodes) => {
 };
 
 /**
- * Render album rectangles
+ * Render album nodes
  */
-export const renderAlbumRectangles = (albumNodes) => {
+export const renderAlbumRectangles = (albumNodes, shape = 'square') => {
+  const fillValue = (d) => {
+    if (d.img && d.patternId) {
+      return `url(#${d.patternId})`;
+    }
+    return '#333';
+  };
+
+  if (shape === 'circle') {
+    albumNodes.append('circle')
+      .attr('r', d => d.radius)
+      .attr('cx', 0)
+      .attr('cy', 0)
+      .attr('fill', fillValue)
+      .attr('stroke', 'rgba(255, 255, 255, 0.18)')
+      .attr('stroke-width', 2)
+      .style('filter', 'drop-shadow(0 10px 20px rgba(0, 0, 0, 0.45))');
+    return;
+  }
+
   albumNodes.append('rect')
     .attr('width', d => d.radius * 2)
     .attr('height', d => d.radius * 2)
     .attr('x', d => -d.radius)
     .attr('y', d => -d.radius)
-    .attr('fill', (d) => {
-      if (d.img && d.patternId) {
-        return `url(#${d.patternId})`;
-      }
-      return '#333';
-    })
+    .attr('fill', fillValue)
     .attr('fill-opacity', 0.85)
     .attr('stroke', 'rgba(0, 0, 0, 0.1)')
     .attr('stroke-width', 1)
