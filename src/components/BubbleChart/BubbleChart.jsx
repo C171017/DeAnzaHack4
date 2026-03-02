@@ -50,12 +50,12 @@ const BubbleChart = ({
 
     const containerElement = svgRef.current?.parentElement;
     const containerRect = containerElement?.getBoundingClientRect();
-    const viewportWidth = containerRect?.width || window.innerWidth;
-    const viewportHeight = containerRect?.height || window.innerHeight;
+    let viewportWidth = containerRect?.width || window.innerWidth;
+    let viewportHeight = containerRect?.height || window.innerHeight;
 
     // Calculate SVG size: 150% of the largest visible container dimension
-    const maxWindowDimension = Math.max(viewportWidth, viewportHeight);
-    const svgSize = maxWindowDimension * SVG_SIZE_MULTIPLIER;
+    let maxWindowDimension = Math.max(viewportWidth, viewportHeight);
+    let svgSize = maxWindowDimension * SVG_SIZE_MULTIPLIER;
 
     // Calculate position to center SVG on its container
     const windowCenterX = viewportWidth / 2;
@@ -178,22 +178,42 @@ const BubbleChart = ({
     let wrappedUpdateScrollbars = () => {};
     let scrollbarElements = null;
 
+    const getViewportMetrics = () => ({
+      viewportWidth,
+      viewportHeight,
+      svgSize
+    });
+
     if (showScrollbars) {
       scrollbarElements = createScrollbars(isTouchDevice);
-      const updateScrollbars = createUpdateScrollbars(getCurrentTransform, isTouchDevice);
+      const updateScrollbars = createUpdateScrollbars(getCurrentTransform, isTouchDevice, getViewportMetrics);
       wrappedUpdateScrollbars = () => {
         updateScrollbars(scrollbarElements.horizontalThumb, scrollbarElements.verticalThumb);
       };
     }
 
     // Create zoom behavior
-    const zoom = createZoomBehavior(container, wrappedUpdateScrollbars, getCurrentTransform, setCurrentTransform);
+    const zoom = createZoomBehavior(
+      container,
+      wrappedUpdateScrollbars,
+      getCurrentTransform,
+      setCurrentTransform,
+      getViewportMetrics
+    );
 
     container.attr('transform', 'translate(0, 0) scale(1)');
     svg.call(zoom)
       .on('dblclick.zoom', null);
 
-    setupPanHandlers(svg, container, zoom, getCurrentTransform, setCurrentTransform, wrappedUpdateScrollbars);
+    setupPanHandlers(
+      svg,
+      container,
+      zoom,
+      getCurrentTransform,
+      setCurrentTransform,
+      wrappedUpdateScrollbars,
+      getViewportMetrics
+    );
     setupCursorManagement(svg);
 
     if (showScrollbars && scrollbarElements) {
@@ -207,7 +227,8 @@ const BubbleChart = ({
         container,
         svg,
         zoom,
-        wrappedUpdateScrollbars
+        wrappedUpdateScrollbars,
+        getViewportMetrics
       );
     }
 
@@ -228,6 +249,11 @@ const BubbleChart = ({
       const newSvgLeft = newWindowCenterX - newSvgSize / 2;
       const newSvgTop = newWindowCenterY - newSvgSize / 2;
       
+      viewportWidth = nextViewportWidth;
+      viewportHeight = nextViewportHeight;
+      maxWindowDimension = newMaxDimension;
+      svgSize = newSvgSize;
+
       d3.select(svgRef.current)
         .attr('width', newSvgSize)
         .attr('height', newSvgSize)

@@ -226,6 +226,10 @@
         #050505;
 }
 
+.dashboard-stage--stream {
+    background: #ffffff;
+}
+
 .dashboard-empty {
     position: absolute;
     inset: 0;

@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 import { SCROLLBAR_CONFIG, ZOOM_CONFIG } from '../constants';
+import { clampTransformToViewport, getTransformBounds } from './zoomPan';
 
 /**
  * Create scrollbar container and elements
@@ -96,34 +97,34 @@ export const createScrollbars = (isTouchDevice) => {
 /**
  * Update scrollbar positions and sizes
  */
-export const createUpdateScrollbars = (currentTransform, isTouchDevice) => {
+export const createUpdateScrollbars = (currentTransform, isTouchDevice, getViewportMetrics = null) => {
   return (horizontalThumb, verticalThumb) => {
     if (isTouchDevice) return;
+
+    const transform = currentTransform();
+    const viewportMetrics = getViewportMetrics
+      ? getViewportMetrics()
+      : {
+          viewportWidth: window.innerWidth,
+          viewportHeight: window.innerHeight,
+          svgSize: Math.max(window.innerWidth, window.innerHeight) * 1.5
+        };
+    const bounds = getTransformBounds(transform, viewportMetrics);
+    const panRangeX = bounds.maxX - bounds.minX;
+    const panRangeY = bounds.maxY - bounds.minY;
     
-    const VIEWBOX_SIZE = 1920;
-    const svgSize = Math.max(window.innerWidth, window.innerHeight) * 1.5;
-    const scale = currentTransform.k;
-    
-    const visibleWidth = window.innerWidth / scale;
-    const visibleHeight = window.innerHeight / scale;
-    
-    const maxPanX = Math.max(0, (svgSize / scale) - window.innerWidth / scale);
-    const maxPanY = Math.max(0, (svgSize / scale) - window.innerHeight / scale);
-    
-    const panX = -currentTransform.x * scale;
-    const panY = -currentTransform.y * scale;
-    
-    const trackWidth = window.innerWidth - 20;
-    const trackHeight = window.innerHeight - 20;
-    
-    const thumbWidthRatio = Math.min(1, visibleWidth / (svgSize / scale));
-    const thumbHeightRatio = Math.min(1, visibleHeight / (svgSize / scale));
+    const trackWidth = viewportMetrics.viewportWidth - 20;
+    const trackHeight = viewportMetrics.viewportHeight - 20;
+    const scrollableWidth = bounds.visibleWidth + (panRangeX / transform.k);
+    const scrollableHeight = bounds.visibleHeight + (panRangeY / transform.k);
+    const thumbWidthRatio = scrollableWidth > 0 ? Math.min(1, bounds.visibleWidth / scrollableWidth) : 1;
+    const thumbHeightRatio = scrollableHeight > 0 ? Math.min(1, bounds.visibleHeight / scrollableHeight) : 1;
     
     const thumbWidth = Math.max(thumbWidthRatio * trackWidth, SCROLLBAR_CONFIG.THUMB_MIN_HEIGHT);
     const thumbHeight = Math.max(thumbHeightRatio * trackHeight, SCROLLBAR_CONFIG.THUMB_MIN_HEIGHT);
     
-    const thumbX = maxPanX > 0 ? (panX / maxPanX) * (trackWidth - thumbWidth) : 0;
-    const thumbY = maxPanY > 0 ? (panY / maxPanY) * (trackHeight - thumbHeight) : 0;
+    const thumbX = panRangeX > 0 ? ((transform.x - bounds.minX) / panRangeX) * (trackWidth - thumbWidth) : 0;
+    const thumbY = panRangeY > 0 ? ((transform.y - bounds.minY) / panRangeY) * (trackHeight - thumbHeight) : 0;
     
     horizontalThumb
       .style('width', `${thumbWidth}px`)
@@ -168,7 +169,8 @@ export const setupScrollbarDragHandlers = (
   container,
   svg,
   zoom,
-  updateScrollbars
+  updateScrollbars,
+  getViewportMetrics = null
 ) => {
   let isDraggingHorizontal = false;
   let isDraggingVertical = false;
@@ -199,23 +201,30 @@ export const setupScrollbarDragHandlers = (
     if (isDraggingHorizontal) {
       event.preventDefault();
       const deltaX = event.clientX - dragStartX;
-      const svgSize = Math.max(window.innerWidth, window.innerHeight) * 1.5;
       const currentTransform = getCurrentTransform();
-      const scale = currentTransform.k;
-      const maxPanX = Math.max(0, (svgSize / scale) - window.innerWidth / scale);
-      const trackWidth = window.innerWidth - 20;
-      const thumbWidthRatio = Math.min(1, (window.innerWidth / scale) / (svgSize / scale));
+      const viewportMetrics = getViewportMetrics
+        ? getViewportMetrics()
+        : {
+            viewportWidth: window.innerWidth,
+            viewportHeight: window.innerHeight,
+            svgSize: Math.max(window.innerWidth, window.innerHeight) * 1.5
+          };
+      const bounds = getTransformBounds(currentTransform, viewportMetrics);
+      const panRangeX = bounds.maxX - bounds.minX;
+      const trackWidth = viewportMetrics.viewportWidth - 20;
+      const scrollableWidth = bounds.visibleWidth + (panRangeX / currentTransform.k);
+      const thumbWidthRatio = scrollableWidth > 0 ? Math.min(1, bounds.visibleWidth / scrollableWidth) : 1;
       const thumbWidth = Math.max(thumbWidthRatio * trackWidth, SCROLLBAR_CONFIG.THUMB_MIN_HEIGHT);
       const maxThumbX = trackWidth - thumbWidth;
       
       const trackRect = horizontalTrack.node().getBoundingClientRect();
       const initialThumbX = dragStartX - trackRect.left;
       
-      if (maxThumbX > 0 && maxPanX > 0) {
+      if (maxThumbX > 0 && panRangeX > 0) {
         const newThumbX = Math.max(0, Math.min(maxThumbX, initialThumbX + deltaX));
         const panRatio = newThumbX / maxThumbX;
-        const newPanX = -panRatio * maxPanX * scale;
-        const newTransform = currentTransform.translate(newPanX - currentTransform.x, 0);
+        const newX = bounds.minX + (panRatio * panRangeX);
+        const newTransform = currentTransform.translate(newX - currentTransform.x, 0);
         setCurrentTransform(newTransform);
         container.attr('transform', `translate(${newTransform.x},${newTransform.y}) scale(${newTransform.k})`);
         svg.call(zoom.transform, newTransform);
@@ -226,23 +235,30 @@ export const setupScrollbarDragHandlers = (
     if (isDraggingVertical) {
       event.preventDefault();
       const deltaY = event.clientY - dragStartY;
-      const svgSize = Math.max(window.innerWidth, window.innerHeight) * 1.5;
       const currentTransform = getCurrentTransform();
-      const scale = currentTransform.k;
-      const maxPanY = Math.max(0, (svgSize / scale) - window.innerHeight / scale);
-      const trackHeight = window.innerHeight - 20;
-      const thumbHeightRatio = Math.min(1, (window.innerHeight / scale) / (svgSize / scale));
+      const viewportMetrics = getViewportMetrics
+        ? getViewportMetrics()
+        : {
+            viewportWidth: window.innerWidth,
+            viewportHeight: window.innerHeight,
+            svgSize: Math.max(window.innerWidth, window.innerHeight) * 1.5
+          };
+      const bounds = getTransformBounds(currentTransform, viewportMetrics);
+      const panRangeY = bounds.maxY - bounds.minY;
+      const trackHeight = viewportMetrics.viewportHeight - 20;
+      const scrollableHeight = bounds.visibleHeight + (panRangeY / currentTransform.k);
+      const thumbHeightRatio = scrollableHeight > 0 ? Math.min(1, bounds.visibleHeight / scrollableHeight) : 1;
       const thumbHeight = Math.max(thumbHeightRatio * trackHeight, SCROLLBAR_CONFIG.THUMB_MIN_HEIGHT);
       const maxThumbY = trackHeight - thumbHeight;
       
       const trackRect = verticalTrack.node().getBoundingClientRect();
       const initialThumbY = dragStartY - trackRect.top;
       
-      if (maxThumbY > 0 && maxPanY > 0) {
+      if (maxThumbY > 0 && panRangeY > 0) {
         const newThumbY = Math.max(0, Math.min(maxThumbY, initialThumbY + deltaY));
         const panRatio = newThumbY / maxThumbY;
-        const newPanY = -panRatio * maxPanY * scale;
-        const newTransform = currentTransform.translate(0, newPanY - currentTransform.y);
+        const newY = bounds.minY + (panRatio * panRangeY);
+        const newTransform = currentTransform.translate(0, newY - currentTransform.y);
         setCurrentTransform(newTransform);
         container.attr('transform', `translate(${newTransform.x},${newTransform.y}) scale(${newTransform.k})`);
         svg.call(zoom.transform, newTransform);
@@ -299,12 +315,20 @@ export const setupScrollbarDragHandlers = (
     const transformedPoint = currentTransform.invert([x, y]);
     
     // Calculate new transform with zoom centered on viewport center
-    const newTransform = d3.zoomIdentity
+    const unclampedTransform = d3.zoomIdentity
       .translate(
         currentTransform.x + (transformedPoint[0] * (currentTransform.k - newScale)),
         currentTransform.y + (transformedPoint[1] * (currentTransform.k - newScale))
       )
       .scale(newScale);
+    const newTransform = clampTransformToViewport(
+      unclampedTransform,
+      getViewportMetrics || (() => ({
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+        svgSize: Math.max(window.innerWidth, window.innerHeight) * 1.5
+      }))
+    );
     
     setCurrentTransform(newTransform);
     container.attr('transform', `translate(${newTransform.x},${newTransform.y}) scale(${newTransform.k})`);

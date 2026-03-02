@@ -54,8 +54,63 @@ export const createSimulation = (allData, albumCollisionPadding) => {
     })
     .strength(SIMULATION_CONFIG.COLLISION_STRENGTH);
 
+  const magnetic = (nodes) => {
+    const albumNodes = nodes.filter(node => !node.isGenre);
+
+    const force = (alpha) => {
+      for (let i = 0; i < albumNodes.length; i++) {
+        const source = albumNodes[i];
+
+        for (let j = i + 1; j < albumNodes.length; j++) {
+          const target = albumNodes[j];
+
+          if (source._isDragging && target._isDragging) {
+            continue;
+          }
+
+          const dx = target.x - source.x;
+          const dy = target.y - source.y;
+          const distance = Math.hypot(dx, dy);
+
+          if (!distance) {
+            continue;
+          }
+
+          const minimumDistance =
+            source.radius +
+            target.radius +
+            (albumCollisionPadding * 2) +
+            SIMULATION_CONFIG.MAGNETIC_GAP;
+          const magneticDistance = minimumDistance + SIMULATION_CONFIG.MAGNETIC_RANGE;
+
+          if (distance > magneticDistance) {
+            continue;
+          }
+
+          const pull = (distance - minimumDistance) * SIMULATION_CONFIG.MAGNETIC_STRENGTH * alpha;
+          const offsetX = (dx / distance) * pull;
+          const offsetY = (dy / distance) * pull;
+
+          if (!source._isDragging) {
+            source.vx += offsetX;
+            source.vy += offsetY;
+          }
+
+          if (!target._isDragging) {
+            target.vx -= offsetX;
+            target.vy -= offsetY;
+          }
+        }
+      }
+    };
+
+    force.initialize = () => {};
+    return force;
+  };
+
   return d3.forceSimulation(allData)
     .force('collide', collide)
+    .force('magnetic', magnetic(allData))
     .alphaDecay(SIMULATION_CONFIG.ALPHA_DECAY)
     .velocityDecay(SIMULATION_CONFIG.VELOCITY_DECAY);
 };

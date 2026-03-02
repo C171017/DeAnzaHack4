@@ -313,7 +313,7 @@ function App() {
           </div>
         </header>
 
-        <main className="dashboard-stage">
+        <main className={`dashboard-stage ${activeView === 'stream' ? 'dashboard-stage--stream' : ''}`.trim()}>
           {renderActiveView()}
 
           <div className="dashboard-stat-card">

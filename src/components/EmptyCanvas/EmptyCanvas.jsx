@@ -50,8 +50,10 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
     }
 
     // Calculate SVG size: 150% of the largest window dimension
-    const maxWindowDimension = Math.max(window.innerWidth, window.innerHeight);
-    const svgSize = maxWindowDimension * SVG_SIZE_MULTIPLIER;
+    let viewportWidth = window.innerWidth;
+    let viewportHeight = window.innerHeight;
+    let maxWindowDimension = Math.max(viewportWidth, viewportHeight);
+    let svgSize = maxWindowDimension * SVG_SIZE_MULTIPLIER;
 
     // Calculate position to center SVG on window
     const windowCenterX = window.innerWidth / 2;
@@ -64,7 +66,7 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
       .attr('height', svgSize)
       .attr('viewBox', `0 0 ${VIEWBOX_SIZE} ${VIEWBOX_SIZE}`)
       .attr('preserveAspectRatio', 'xMidYMid meet')
-      .style('background-color', 'transparent')
+      .style('background-color', '#ffffff')
       .style('overflow', 'visible')
       .style('position', 'absolute')
       .style('left', `${svgLeft}px`)
@@ -336,14 +338,27 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
 
     // Create scrollbars
     const scrollbarElements = createScrollbars(isTouchDevice);
-    const updateScrollbars = createUpdateScrollbars(getCurrentTransform, isTouchDevice);
+
+    const getViewportMetrics = () => ({
+      viewportWidth,
+      viewportHeight,
+      svgSize
+    });
+
+    const updateScrollbars = createUpdateScrollbars(getCurrentTransform, isTouchDevice, getViewportMetrics);
     
     const wrappedUpdateScrollbars = () => {
       updateScrollbars(scrollbarElements.horizontalThumb, scrollbarElements.verticalThumb);
     };
 
     // Create zoom behavior
-    const zoom = createZoomBehavior(container, wrappedUpdateScrollbars, getCurrentTransform, setCurrentTransform);
+    const zoom = createZoomBehavior(
+      container,
+      wrappedUpdateScrollbars,
+      getCurrentTransform,
+      setCurrentTransform,
+      getViewportMetrics
+    );
 
     // Restore previous zoom transform or set to identity
     const savedTransform = zoomTransformRef.current || d3.zoomIdentity;
@@ -358,7 +373,15 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
     // Update the current transform reference
     currentTransform = savedTransform;
 
-    setupPanHandlers(svg, container, zoom, getCurrentTransform, setCurrentTransform, wrappedUpdateScrollbars);
+    setupPanHandlers(
+      svg,
+      container,
+      zoom,
+      getCurrentTransform,
+      setCurrentTransform,
+      wrappedUpdateScrollbars,
+      getViewportMetrics
+    );
     setupCursorManagement(svg);
 
     // Setup scrollbar drag handlers
@@ -372,7 +395,8 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
       container,
       svg,
       zoom,
-      wrappedUpdateScrollbars
+      wrappedUpdateScrollbars,
+      getViewportMetrics
     );
 
     // Initial scrollbar update
@@ -380,12 +404,16 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
 
     // Handle window resize
     const handleResize = () => {
-      const newMaxDimension = Math.max(window.innerWidth, window.innerHeight);
+      viewportWidth = window.innerWidth;
+      viewportHeight = window.innerHeight;
+      const newMaxDimension = Math.max(viewportWidth, viewportHeight);
       const newSvgSize = newMaxDimension * SVG_SIZE_MULTIPLIER;
-      const newWindowCenterX = window.innerWidth / 2;
-      const newWindowCenterY = window.innerHeight / 2;
+      const newWindowCenterX = viewportWidth / 2;
+      const newWindowCenterY = viewportHeight / 2;
       const newSvgLeft = newWindowCenterX - newSvgSize / 2;
       const newSvgTop = newWindowCenterY - newSvgSize / 2;
+      maxWindowDimension = newMaxDimension;
+      svgSize = newSvgSize;
       
       d3.select(svgRef.current)
         .attr('width', newSvgSize)
