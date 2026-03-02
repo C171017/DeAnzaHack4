@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import BubbleChart from './components/BubbleChart';
 import EmptyCanvas from './components/EmptyCanvas';
 import AlbumLibrary from './components/AlbumLibrary';
 import GenreLibrary from './components/GenreLibrary';
@@ -10,11 +9,9 @@ import { getAuthorizationUrl, getStoredAccessToken } from './utils/spotifyAuth';
 import './App.css';
 
 function App() {
-  const [activeView, setActiveView] = useState('home');
+  const [activeView, setActiveView] = useState('stream');
   const { isAuthenticated, user, loading: authLoading, error: authError, logout } = useSpotifyAuth();
   const { 
-    data, 
-    albums, 
     libraryAlbums,
     canvasAlbums,
     libraryGenres,
@@ -58,8 +55,6 @@ function App() {
   const error = authError || albumsError;
   const userName = user?.display_name?.trim() || user?.id || 'Hi';
   const greetingName = userName.split(' ')[0];
-  const totalAlbums = albums.length || data.length;
-  const visibleAlbums = data.length;
   const activeAlbumCount = canvasAlbums.length;
   const activeGenreCount = canvasGenres.length;
   const streamSourceAlbums = canvasAlbums.length > 0 ? canvasAlbums : libraryAlbums;
@@ -81,43 +76,12 @@ function App() {
   };
 
   const handleNextView = () => {
-    if (activeView === 'home') {
-      setActiveView('stream');
-      return;
-    }
-
     if (activeView === 'stream') {
       setActiveView('library');
       return;
     }
 
-    setActiveView('home');
-  };
-
-  const renderHomeView = () => {
-    if (visibleAlbums > 0) {
-      return (
-        <BubbleChart
-          data={data}
-          includeGenres={false}
-          backgroundFill="#050505"
-          albumShape="circle"
-          showScrollbars={false}
-          enableClusterDrag={true}
-        />
-      );
-    }
-
-    return (
-      <div className="dashboard-empty">
-        <h2>{albumsLoading ? 'Loading your albums...' : 'No albums available yet'}</h2>
-        <p>
-          {albumsLoading
-            ? 'Spotify is fetching your saved albums and placing them on the canvas.'
-            : 'Save a few albums in Spotify, then refresh this page.'}
-        </p>
-      </div>
-    );
+    setActiveView('stream');
   };
 
   const renderStreamView = () => (
@@ -169,7 +133,7 @@ function App() {
         </div>
       </div>
       <div className="dashboard-overlay-card dashboard-overlay-card--center">
-        <strong>Stream Workspace</strong>
+        <strong>Home Workspace</strong>
         <span>Drag albums and genres onto the canvas. Drop them back into the side trays to remove them. Use the quick actions to open a focused pick immediately.</span>
       </div>
     </>
@@ -181,7 +145,7 @@ function App() {
         <p className="dashboard-library-panel__eyebrow">Albums</p>
         <h2>Saved collection</h2>
         <p className="dashboard-library-panel__copy">
-          Double-click an album to open it in Spotify. Switch to Stream to drag albums onto the workspace.
+          Double-click an album to open it in Spotify. Switch to Home to drag albums onto the workspace.
         </p>
         <div className="dashboard-library-grid">
           {libraryAlbums.length > 0 ? (
@@ -217,7 +181,7 @@ function App() {
         <p className="dashboard-library-panel__eyebrow">Genres</p>
         <h2>Available tags</h2>
         <p className="dashboard-library-panel__copy">
-          These are ready to drop into Stream. Any genres currently on the canvas are tracked separately.
+          These are ready to drop into Home. Any genres currently on the canvas are tracked separately.
         </p>
         <div className="dashboard-genre-list">
           {libraryGenres.length > 0 ? (
@@ -247,7 +211,7 @@ function App() {
       return renderLibraryView();
     }
 
-    return renderHomeView();
+    return renderStreamView();
   };
 
   if (!isAuthenticated) {
@@ -260,7 +224,7 @@ function App() {
             <p className="login-kicker">Spotify-powered album constellation</p>
             <h1 className="login-brand">Hacksify</h1>
             <p className="login-copy">
-              Start with a focused login screen, then drop users into a dark visual home made from their saved albums.
+              Connect once, then manage your saved music from a tactile workspace built for fast access.
             </p>
             {error ? (
               <p className="login-error">{error}</p>
@@ -285,18 +249,11 @@ function App() {
           <div className="dashboard-logo">Hacksify</div>
           <nav className="dashboard-nav" aria-label="Primary">
             <button
-              className={`dashboard-nav__item ${activeView === 'home' ? 'dashboard-nav__item--active' : ''}`.trim()}
-              onClick={() => setActiveView('home')}
-              type="button"
-            >
-              Home
-            </button>
-            <button
               className={`dashboard-nav__item ${activeView === 'stream' ? 'dashboard-nav__item--active' : ''}`.trim()}
               onClick={() => setActiveView('stream')}
               type="button"
             >
-              Stream
+              Home
             </button>
             <button
               className={`dashboard-nav__item ${activeView === 'library' ? 'dashboard-nav__item--active' : ''}`.trim()}
@@ -321,18 +278,14 @@ function App() {
             <strong>
               {activeView === 'stream'
                 ? `On Stream: ${activeAlbumCount} albums`
-                : activeView === 'library'
-                  ? `Library Ready: ${libraryAlbums.length} albums`
-                  : `Albums Displayed: ${visibleAlbums}`}
+                : `Library Ready: ${libraryAlbums.length} albums`}
             </strong>
             <span>
               {activeView === 'stream'
-                ? `${activeGenreCount} genres placed on the stream canvas`
+                ? `${activeGenreCount} genres placed on the home canvas`
                 : activeView === 'library'
-                  ? `${libraryGenres.length} genres available to drag into Stream`
-                  : albumsLoading
-                    ? 'Syncing your Spotify library...'
-                    : `Showing ${visibleAlbums} of ${totalAlbums} saved albums`}
+                  ? `${libraryGenres.length} genres available to drag into Home`
+                  : ''}
             </span>
           </div>
 
@@ -340,10 +293,10 @@ function App() {
             className="dashboard-next"
             onClick={handleNextView}
             type="button"
-            aria-label={activeView === 'home' ? 'Open Stream workspace' : activeView === 'stream' ? 'Open Library page' : 'Return Home'}
+            aria-label={activeView === 'stream' ? 'Open Library page' : 'Open Home workspace'}
           >
             <span className="dashboard-next__label">
-              {activeView === 'home' ? 'Stream' : activeView === 'stream' ? 'Library' : 'Home'}
+              {activeView === 'stream' ? 'Library' : 'Home'}
             </span>
             <span aria-hidden="true">&rarr;</span>
           </button>
