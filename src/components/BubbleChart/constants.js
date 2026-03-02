@@ -43,8 +43,10 @@ export const SIMULATION_CONFIG = {
 
 // Zoom configuration
 export const ZOOM_CONFIG = {
-  MIN_ZOOM: 0.25,
-  MAX_ZOOM: 2.5
+  minZoom: 0.8,
+  maxZoom: 1.8,
+  MIN_ZOOM: 0.8,
+  MAX_ZOOM: 1.8
 };
 
 // Scrollbar configuration

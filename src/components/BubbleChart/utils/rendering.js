@@ -17,7 +17,7 @@ export const createImagePatterns = (defs, albumNodes) => {
       .append('image')
       .attr('height', 1)
       .attr('width', 1)
-      .attr('preserveAspectRatio', 'xMidYMid meet')
+      .attr('preserveAspectRatio', 'xMidYMid slice')
       .attr('href', d.img);
     d.patternId = patternId;
     patternIndex++;
@@ -92,6 +92,7 @@ export const renderAlbumRectangles = (albumNodes, shape = 'square') => {
 
   if (shape === 'circle') {
     albumNodes.append('circle')
+      .attr('class', 'album-bubble')
       .attr('r', d => d.radius)
       .attr('cx', 0)
       .attr('cy', 0)
@@ -103,6 +104,7 @@ export const renderAlbumRectangles = (albumNodes, shape = 'square') => {
   }
 
   albumNodes.append('rect')
+    .attr('class', 'album-tile')
     .attr('width', d => d.radius * 2)
     .attr('height', d => d.radius * 2)
     .attr('x', d => -d.radius)

@@ -15,7 +15,8 @@ import {
   createImagePatterns,
   createGenreGradients,
   renderGenreCircles,
-  renderGenreText
+  renderGenreText,
+  renderAlbumRectangles
 } from '../BubbleChart/utils/rendering';
 import {
   createDragHandlers,
@@ -244,28 +245,9 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
       renderGenreCircles(genreNodesEnter);
       renderGenreText(genreNodesEnter);
 
-      // Add rectangles to album nodes (after genre circles, so albums appear on top)
-      nodesEnter.filter(d => !d.isGenre)
-        .append('rect')
-        .attr('width', d => d.radius * 2)
-        .attr('height', d => d.radius * 2)
-        .attr('x', d => -d.radius)
-        .attr('y', d => -d.radius)
-        .attr('fill', '#333')
-        .attr('fill-opacity', 0.85)
-        .attr('stroke', 'rgba(0, 0, 0, 0.1)')
-        .attr('stroke-width', 1)
-        .style('filter', 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))');
-
-      // Update fill for album nodes
-      nodesMerged.filter(d => !d.isGenre)
-        .select('rect')
-        .attr('fill', (d) => {
-          if (d.img && d.patternId) {
-            return `url(#${d.patternId})`;
-          }
-          return '#333';
-        });
+      // Render album bubbles after genre circles so albums appear on top
+      const albumNodesEnter = nodesEnter.filter(d => !d.isGenre);
+      renderAlbumRectangles(albumNodesEnter, 'circle');
 
       // Setup drag handlers (exact same as BubbleChart)
       const { dragstarted, dragged, dragended } = createDragHandlers(simulation, ALBUM_COLLISION_PADDING);

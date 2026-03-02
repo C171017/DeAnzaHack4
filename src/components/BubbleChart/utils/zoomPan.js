@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { VIEWBOX_SIZE, ZOOM_CONFIG } from '../constants';
 
-const PAN_OVERSCROLL = 48;
+const PAN_OVERSCROLL = 24;
 
 export const getTransformBounds = (transform, viewportMetrics) => {
   const { viewportWidth, viewportHeight, svgSize } = viewportMetrics;
