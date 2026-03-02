@@ -55,10 +55,11 @@ export const createZoomBehavior = (
   updateScrollbars,
   getCurrentTransform,
   setCurrentTransform,
-  getViewportMetrics
+  getViewportMetrics,
+  zoomBounds = ZOOM_CONFIG
 ) => {
   const zoom = d3.zoom()
-    .scaleExtent([ZOOM_CONFIG.MIN_ZOOM, ZOOM_CONFIG.MAX_ZOOM])
+    .scaleExtent([zoomBounds.minZoom, zoomBounds.maxZoom])
     .constrain((transform) => clampTransformToViewport(transform, getViewportMetrics))
     .on('zoom', (event) => {
       setCurrentTransform(event.transform);

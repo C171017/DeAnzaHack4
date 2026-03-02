@@ -41,7 +41,8 @@ const BubbleChart = ({
   includeGenres = true,
   backgroundFill = '#ffffff',
   albumShape = 'square',
-  showScrollbars = true
+  showScrollbars = true,
+  enableClusterDrag = false
 }) => {
   const svgRef = useRef(null);
 
@@ -115,7 +116,11 @@ const BubbleChart = ({
       .style('cursor', 'grab');
 
     // Setup drag handlers
-    const { dragstarted, dragged, dragended } = createDragHandlers(simulation, ALBUM_COLLISION_PADDING);
+    const { dragstarted, dragged, dragended } = createDragHandlers(
+      simulation,
+      ALBUM_COLLISION_PADDING,
+      { enableClusterDrag }
+    );
     const nodeDrag = d3.drag()
       .on('start', function(event, d) {
         if (event.sourceEvent) {
@@ -278,7 +283,7 @@ const BubbleChart = ({
         d3.selectAll('.bubble-chart-scrollbars').remove();
       }
     };
-  }, [albumShape, backgroundFill, data, includeGenres, showScrollbars]);
+  }, [albumShape, backgroundFill, data, enableClusterDrag, includeGenres, showScrollbars]);
 
   return <svg ref={svgRef} />;
 };

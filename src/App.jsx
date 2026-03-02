@@ -103,6 +103,7 @@ function App() {
           backgroundFill="#050505"
           albumShape="circle"
           showScrollbars={false}
+          enableClusterDrag={true}
         />
       );
     }

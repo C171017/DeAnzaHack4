@@ -170,7 +170,11 @@ export const setupScrollbarDragHandlers = (
   svg,
   zoom,
   updateScrollbars,
-  getViewportMetrics = null
+  getViewportMetrics = null,
+  zoomBounds = {
+    minZoom: ZOOM_CONFIG.MIN_ZOOM,
+    maxZoom: ZOOM_CONFIG.MAX_ZOOM
+  }
 ) => {
   let isDraggingHorizontal = false;
   let isDraggingVertical = false;
@@ -297,8 +301,8 @@ export const setupScrollbarDragHandlers = (
     
     // Calculate new scale
     const newScale = Math.max(
-      ZOOM_CONFIG.MIN_ZOOM,
-      Math.min(ZOOM_CONFIG.MAX_ZOOM, currentTransform.k * scaleFactor)
+      zoomBounds.minZoom,
+      Math.min(zoomBounds.maxZoom, currentTransform.k * scaleFactor)
     );
     
     // Zoom centered on viewport center

@@ -3,7 +3,8 @@ import * as d3 from 'd3';
 import {
   VIEWBOX_SIZE,
   SVG_SIZE_MULTIPLIER,
-  ALBUM_COLLISION_PADDING
+  ALBUM_COLLISION_PADDING,
+  ZOOM_CONFIG
 } from '../BubbleChart/constants';
 import {
   initializeNodePositions,
@@ -30,6 +31,11 @@ import {
   createUpdateScrollbars,
   setupScrollbarDragHandlers
 } from '../BubbleChart/utils/scrollbars';
+
+const STREAM_ZOOM_BOUNDS = {
+  minZoom: 1,
+  maxZoom: ZOOM_CONFIG.MAX_ZOOM
+};
 
 /**
  * EmptyCanvas component - renders an empty SVG canvas that can accept dropped albums and genres
@@ -357,11 +363,15 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
       wrappedUpdateScrollbars,
       getCurrentTransform,
       setCurrentTransform,
-      getViewportMetrics
+      getViewportMetrics,
+      STREAM_ZOOM_BOUNDS
     );
 
     // Restore previous zoom transform or set to identity
-    const savedTransform = zoomTransformRef.current || d3.zoomIdentity;
+    const priorTransform = zoomTransformRef.current || d3.zoomIdentity;
+    const savedTransform = d3.zoomIdentity
+      .translate(priorTransform.x, priorTransform.y)
+      .scale(Math.max(STREAM_ZOOM_BOUNDS.minZoom, Math.min(STREAM_ZOOM_BOUNDS.maxZoom, priorTransform.k)));
     // Apply transform to container
     container.attr('transform', `translate(${savedTransform.x}, ${savedTransform.y}) scale(${savedTransform.k})`);
     // Set up zoom behavior on SVG (same as BubbleChart)
@@ -396,7 +406,8 @@ const EmptyCanvas = ({ albums = [], genres = [], onAlbumDrop, onAlbumDragStart, 
       svg,
       zoom,
       wrappedUpdateScrollbars,
-      getViewportMetrics
+      getViewportMetrics,
+      STREAM_ZOOM_BOUNDS
     );
 
     // Initial scrollbar update

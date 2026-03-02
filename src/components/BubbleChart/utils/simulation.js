@@ -43,7 +43,7 @@ export const createSimulation = (allData, albumCollisionPadding) => {
   const collide = d3.forceCollide()
     .radius(d => {
       // If node is being dragged, set collision radius to 0 to prevent interference
-      if (d._isDragging) {
+      if (d._isDragging || d._isDraggedWithCluster) {
         return 0;
       }
       if (d.isGenre) {
@@ -56,8 +56,50 @@ export const createSimulation = (allData, albumCollisionPadding) => {
 
   const magnetic = (nodes) => {
     const albumNodes = nodes.filter(node => !node.isGenre);
+    const applyVelocity = (node, velocityX, velocityY) => {
+      if (node._isDragging || node._isDraggedWithCluster) {
+        return;
+      }
+
+      node.vx += velocityX;
+      node.vy += velocityY;
+    };
 
     const force = (alpha) => {
+      for (const source of albumNodes) {
+        if (!source._stickyLinks || source._stickyLinks.size === 0) {
+          continue;
+        }
+
+        for (const targetId of source._stickyLinks) {
+          const target = albumNodes.find(node => node.id === targetId);
+
+          if (!target || source.id > target.id) {
+            continue;
+          }
+
+          const dx = target.x - source.x;
+          const dy = target.y - source.y;
+          const distance = Math.hypot(dx, dy);
+
+          if (!distance) {
+            continue;
+          }
+
+          const desiredDistance =
+            source.radius +
+            target.radius +
+            (albumCollisionPadding * 2) +
+            SIMULATION_CONFIG.STICKY_GAP;
+          const springPull = (distance - desiredDistance) * SIMULATION_CONFIG.STICKY_STRENGTH * alpha;
+          const offsetX = (dx / distance) * springPull;
+          const offsetY = (dy / distance) * springPull;
+
+          applyVelocity(source, offsetX, offsetY);
+          applyVelocity(target, -offsetX, -offsetY);
+        }
+      }
+
       for (let i = 0; i < albumNodes.length; i++) {
         const source = albumNodes[i];
 
@@ -91,15 +133,8 @@ export const createSimulation = (allData, albumCollisionPadding) => {
           const offsetX = (dx / distance) * pull;
           const offsetY = (dy / distance) * pull;
 
-          if (!source._isDragging) {
-            source.vx += offsetX;
-            source.vy += offsetY;
-          }
-
-          if (!target._isDragging) {
-            target.vx -= offsetX;
-            target.vy -= offsetY;
-          }
+          applyVelocity(source, offsetX, offsetY);
+          applyVelocity(target, -offsetX, -offsetY);
         }
       }
     };
@@ -121,7 +156,7 @@ export const createSimulation = (allData, albumCollisionPadding) => {
 export const enforceBoundaries = (allData, viewBoxSize, albumCollisionPadding) => {
   allData.forEach(d => {
     // Skip boundary enforcement for dragged nodes (they're already constrained in drag handler)
-    if (d._isDragging) {
+    if (d._isDragging || d._isDraggedWithCluster) {
       return;
     }
     
